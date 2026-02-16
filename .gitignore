@@ -8,7 +8,7 @@ Thumbs.db
 /out/
 # Gradle
 /.gradle/
-/build/
+**/build/
 # Logs
 *.log
 # Node

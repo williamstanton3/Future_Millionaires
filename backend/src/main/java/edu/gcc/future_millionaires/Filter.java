@@ -8,6 +8,7 @@ public class Filter {
     private String[] days;
     private String semester;
     private int credits;
+    private int NEW_VARIABLE;
 
     // class methods
 

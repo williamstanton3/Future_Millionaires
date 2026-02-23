@@ -1,5 +1,6 @@
 package edu.gcc.future_millionaires;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class Schedule {
@@ -17,7 +18,7 @@ public class Schedule {
     public Schedule(int studentID, String semester) {
         this.studentID = studentID;
         this.semester = semester;
-        //this.schedule = new ArrayList<>();
+        this.schedule = new ArrayList<>();
         this.credits = 0;
     }
 
@@ -25,25 +26,25 @@ public class Schedule {
     public void addCourse(String courseID) {
         if(courseID.isEmpty()){
             //see if there even is a string, if not error
+            return;
         }
+
+        int ID;
         try {
-            Integer.parseInt(courseID);
-            //save as ID then do search
+            ID = Integer.parseInt(courseID);
         } catch (NumberFormatException e) {
             //inform user of an an error, not an integer
             return;
         }
-//        if course is null BUT FIGURE OUT BEST WAY TO SEARCH BY ID
-//        inform user
-//        do not add
-//
-//        for each existing course in schedule
-//        if times conflict
-//        inform user
-//        do not add
-//
+
+        for(Course courses : schedule)
+        {
+            //if times conflict
+            //inform user and do not add (return)
+        }
+
         Course newCourse = new Course(); //add info to object like ID and stuff when constructor is done
-//        add course object to list
+        schedule.add(newCourse);
         credits += newCourse.getCredits();
     }
 

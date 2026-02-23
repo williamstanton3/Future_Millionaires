@@ -1,12 +1,13 @@
 package edu.gcc.future_millionaires;
 
+import java.util.List;
 
 public class Schedule {
 
     // private class variables
     private int studentID;
     private String semester;
-    private String[] schedule; //We should probably do a list of course objects instead, right?
+    private List<Course> schedule;
     private int credits;
     private boolean overlap;
 
@@ -22,6 +23,16 @@ public class Schedule {
 
     // Methods
     public void addCourse(String courseID) {
+        if(courseID.isEmpty()){
+            //see if there even is a string, if not error
+        }
+        try {
+            Integer.parseInt(courseID);
+            //save as ID then do search
+        } catch (NumberFormatException e) {
+            //inform user of an an error, not an integer
+            return;
+        }
 //        if course is null BUT FIGURE OUT BEST WAY TO SEARCH BY ID
 //        inform user
 //        do not add
@@ -31,8 +42,9 @@ public class Schedule {
 //        inform user
 //        do not add
 //
+        Course newCourse = new Course(); //add info to object like ID and stuff when constructor is done
 //        add course object to list
-//        increase totalCredits
+        credits += newCourse.getCredits();
     }
 
     public void removeCourse(String courseID) {
@@ -54,5 +66,7 @@ public class Schedule {
         credits = 0;
     }
 
-    //get scehdule method too?
+    public List<Course> getSchedule(){
+        return schedule;
+    }
 }

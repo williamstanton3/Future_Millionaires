@@ -1,4 +1,5 @@
-//package edu.gcc.comp350;
+package edu.gcc.future_millionaires.;
+//added the package so I could access the course from schedule
 
 import java.util.ArrayList;
 
@@ -46,5 +47,9 @@ public class Course {
 
     public void removeStudent(int studentID) {
 
+    }
+
+    public int getCredits(){
+        return credits;
     }
 }

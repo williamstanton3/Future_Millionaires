@@ -20,40 +20,18 @@ public class Course {
     // class methods
 
     // Constructor
-    public Course() {
-        enrolledStudents = new ArrayList<>();
-    }
+    public Course() {enrolledStudents = new ArrayList<>();}
     // getters
-    public int getCourseID() {
-        return courseID;
-    }
-    public String getDepartment() {
-        return department;
-    }
-    public int getCourseCode() {
-        return courseCode;
-    }
-    public String getProfessor() {
-        return professor;
-    }
-    public String[] getDays() {
-        return days;
-    }
-    public String getSemester() {
-        return semester;
-    }
-    public int getCredits() {
-        return credits;
-    }
-    public String[] getMeetingTime() {
-        return meetingTime;
-    }
-    public int getMaxCapacity() {
-        return maxCapacity;
-    }
-    public ArrayList<Integer> getEnrolledStudents() {
-        return enrolledStudents;
-    }
+    public int getCourseID() {return courseID;}
+    public String getDepartment() {return department;}
+    public int getCourseCode() {return courseCode;}
+    public String getProfessor() {return professor;}
+    public String[] getDays() {return days;}
+    public String getSemester() {return semester;}
+    public int getCredits() {return credits;}
+    public String[] getMeetingTime() {return meetingTime;}
+    public int getMaxCapacity() {return maxCapacity;}
+    public ArrayList<Integer> getEnrolledStudents() {return enrolledStudents;}
 
     // setters
     public void setCourseID(int courseID) {

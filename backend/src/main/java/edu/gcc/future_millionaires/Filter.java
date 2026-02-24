@@ -68,6 +68,24 @@ public class Filter {
         if (credits > 0 && credits !=myCourse.getCredits()) {
             return false;
         }
+        if (days != null) {
+            String [] availableDays = days; // list of days that they are willing to meet
+            String [] courseDays = myCourse.getDays(); // list of days that the current course meets
+
+            for (String courseDay: courseDays) { // loop through each day that the course meets
+                boolean match = false;
+
+                for (String availableDay: availableDays) { // loop through each available day
+                    if (courseDay.equals(availableDay)) {
+                        match = true; // once we find a match, we know that the current day that the course meets is one that the user is available on
+                        break; // move on to the next course day
+                    }
+                }
+                if (!match) {
+                    return false; // course meets on a day that the user hasn't selected, return false
+                }
+            }
+        }
 
         return true;
     }

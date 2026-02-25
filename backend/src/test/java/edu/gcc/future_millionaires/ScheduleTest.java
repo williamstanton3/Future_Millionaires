@@ -46,6 +46,7 @@ class ScheduleTest {
         assertEquals(creditsAfterFirst, newSchedule.getCredits());
     }
 
+    @Test
     void addCourseCorrect(){
         Schedule newSchedule = new Schedule(00000, "test");
 
@@ -64,5 +65,17 @@ class ScheduleTest {
         Course newCourse0 = new Course();
         Course newCourse1 = new Course();
         Course newCourse2 = new Course();
+    }
+
+    @Test
+    void clearSchedule(){
+        Course newCourse0 = new Course();
+        Schedule newSchedule = new Schedule(00000, "test");
+
+        newSchedule.addCourse("101");
+
+        newSchedule.clearSchedule();
+
+        assertEquals(0, newSchedule.getSchedule().size());
     }
 }

@@ -1,6 +1,8 @@
 package edu.gcc.future_millionaires;
 
+import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.List;
 
 public class Course {
 
@@ -12,7 +14,7 @@ public class Course {
     private String[] days;
     private String semester;
     private int credits;
-    private String[] meetingTime;
+    private List<LocalTime[]> meetingTime;
     private int maxCapacity;
     private ArrayList<Integer> enrolledStudents;
 
@@ -45,7 +47,7 @@ public class Course {
     public int getCredits() {
         return credits;
     }
-    public String[] getMeetingTime() {
+    public List<LocalTime[]>  getMeetingTime() {
         return meetingTime;
     }
     public int getMaxCapacity() {
@@ -77,7 +79,7 @@ public class Course {
     public void setCredits(int credits) {
         this.credits = credits;
     }
-    public void setMeetingTime(String[] meetingTime) {
+    public void setMeetingTime(List<LocalTime[]> meetingTime) {
         this.meetingTime = meetingTime;
     }
     public void setMaxCapacity(int maxCapacity) {
@@ -96,7 +98,7 @@ public class Course {
 
     }
 
-    public void editCourse(String professor, String[] days, String[] meetingTime, int maxCapacity) {
+    public void editCourse(String professor, String[] days, List<LocalTime[]> meetingTime, int maxCapacity) {
         setProfessor(professor);
         setDays(days);
         setMeetingTime(meetingTime);

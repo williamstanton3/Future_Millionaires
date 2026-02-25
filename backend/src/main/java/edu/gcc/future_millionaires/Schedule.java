@@ -37,24 +37,35 @@ public class Schedule {
             return;
         }
 
-        for(Course courses : schedule)
+        //do i create new course here? don't want to if there is a conflict...
+        Course newCourse = new Course(); //add info to object like ID and stuff when constructor is done
+
+        for(Course course : schedule)
         {
-            //if times conflict
-            //inform user and do not add (return)
+            for(String day : course.getDays()){
+                for(String time : course.getMeetingTime()) {
+                    if(newCourse.getMeetingTime().equals(time) && newCourse.getDays().equals(day)){
+                        newCourse = null; //I'm thinking like C, I don't need to do this to free space bc it dies after the method, right?
+                        //inform user and do not add
+                        return;
+                    }
+                }
+            }
         }
 
-        Course newCourse = new Course(); //add info to object like ID and stuff when constructor is done
         schedule.add(newCourse);
         credits += newCourse.getCredits();
     }
 
     public void removeCourse(String courseID) {
-//        for each course in list
-//        if courseID matches
-//        remove it
-//        subtract credits
-//        return
-//
+        for(Course course : schedule)
+        {
+            if(course.getCourseID() == Integer.parseInt(courseID)){
+                //remove & subtract credits
+                return;
+            }
+        }
+
 //        notify user could not find course
     }
 

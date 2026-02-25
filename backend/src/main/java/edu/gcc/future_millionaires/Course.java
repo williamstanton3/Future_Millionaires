@@ -1,4 +1,4 @@
-package edu.gcc.future_millionaires.;
+package edu.gcc.future_millionaires;
 //added the package so I could access the course from schedule
 
 import java.util.ArrayList;
@@ -10,7 +10,7 @@ public class Course {
     private String department;
     private int courseCode;
     private String professor;
-    private String[] days;
+    private String[] days; //is this better as an enumerator? and meeting type
     private String semester;
     private int credits;
     private String[] meetingTime;
@@ -51,5 +51,14 @@ public class Course {
 
     public int getCredits(){
         return credits;
+    }
+    public int getCourseID(){
+        return courseID;
+    }
+    public String[] getDays(){
+        return days;
+    }
+    public String[] getMeetingTime(){
+        return meetingTime;
     }
 }

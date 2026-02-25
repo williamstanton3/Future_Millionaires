@@ -42,11 +42,15 @@ public class Course {
     }
 
     public void addStudent(int studentID) {
-
+        if (enrolledStudents.size() <= maxCapacity){
+            enrolledStudents.add(studentID);
+        } else{
+            //notify user that capacity has been reached
+        }
     }
 
     public void removeStudent(int studentID) {
-
+        enrolledStudents.remove(studentID);
     }
 
     public int getCredits(){

@@ -61,11 +61,11 @@ public class Schedule {
         for(Course course : schedule)
         {
             if(course.getCourseID() == Integer.parseInt(courseID)){
-                //remove & subtract credits
+                schedule.remove(course);
+                credits -= course.getCredits();
                 return;
             }
         }
-
 //        notify user could not find course
     }
 
@@ -74,7 +74,7 @@ public class Schedule {
     }
 
     public void clearSchedule() {
-        //schedule.clear(); <- did it as if it'll be a list
+        schedule.clear();
         credits = 0;
     }
 

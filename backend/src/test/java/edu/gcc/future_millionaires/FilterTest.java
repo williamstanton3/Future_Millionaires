@@ -2,49 +2,76 @@ package edu.gcc.future_millionaires;
 
 import org.junit.jupiter.api.Test;
 
-import java.util.ArrayList;
+import java.time.LocalTime;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class FilterTest {
 
+    private static TimeSlot slot(String day, String start, String end) {
+        TimeSlot t = new TimeSlot();
+        t.setDay(day);
+        t.setStart_time(LocalTime.parse(start));
+        t.setEnd_time(LocalTime.parse(end));
+        return t;
+    }
+
     @Test
     void returnResults() {
-        // Create courses
+
+        // Create courses using your JSON-style fields
+
         Course c1 = new Course();
-        c1.editCourse("Dr. Smith", new String[]{"Mon", "Wed"}, new String[]{"10:00-11:00"}, 30);
-        c1.setDepartment("CS");
+        c1.setFaculty(List.of("Dr. Smith"));
+        c1.setSubject("CS");
         c1.setSemester("Fall");
         c1.setCredits(3);
+        c1.setTimes(List.of(
+                slot("M", "10:00", "11:00"),
+                slot("W", "10:00", "11:00")
+        ));
+        c1.setTotalSeats(30);
 
         Course c2 = new Course();
-        c2.editCourse("Dr. Jones", new String[]{"Tue", "Thu"}, new String[]{"12:00-13:00"}, 25);
-        c2.setDepartment("Math");
+        c2.setFaculty(List.of("Dr. Jones"));
+        c2.setSubject("Math");
         c2.setSemester("Spring");
         c2.setCredits(4);
+        c2.setTimes(List.of(
+                slot("T", "12:00", "13:00"),
+                slot("R", "12:00", "13:00")
+        ));
+        c2.setTotalSeats(25);
 
         Course c3 = new Course();
-        c3.editCourse("Dr. Smith", new String[]{"Tue", "Thu"}, new String[]{"14:00-15:00"}, 25);
-        c3.setDepartment("CS");
+        c3.setFaculty(List.of("Dr. Smith"));
+        c3.setSubject("CS");
         c3.setSemester("Fall");
         c3.setCredits(3);
+        c3.setTimes(List.of(
+                slot("T", "14:00", "15:00"),
+                slot("R", "14:00", "15:00")
+        ));
+        c3.setTotalSeats(25);
 
-        Course[] courses = {c1, c2, c3};
+        List<Course> courses = List.of(c1, c2, c3);
 
-        // Create filter
+        // Create filter (JSON-style)
         Filter filter = new Filter();
         filter.setProfessor("Dr. Smith");
-        filter.setDepartment("CS");
+        filter.setSubject("CS");
 
         // Run filter
-        ArrayList<Course> results = filter.returnResults(courses);
+        List<Course> results = filter.apply(courses);
 
         // Assertions
-        assertEquals(2, results.size(), "Should return 2 courses matching professor Dr. Smith and department CS");
+        assertEquals(2, results.size(),
+                "Should return 2 courses matching professor Dr. Smith and subject CS");
 
         for (Course c : results) {
-            assertEquals("Dr. Smith", c.getProfessor());
-            assertEquals("CS", c.getDepartment());
+            assertEquals("CS", c.getSubject());
+            assertTrue(c.getFaculty().contains("Dr. Smith"));
         }
     }
 }

@@ -1,88 +1,114 @@
 package edu.gcc.future_millionaires;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class Filter {
 
-    // private class variables
-    private String department;
+    // filter criteria
+    private String subject;
     private String professor;
     private String[] days;
     private String semester;
     private int credits;
 
-    // class methods
-
     // Constructor
     public Filter() {
-        // initialize every class variable
-        this.department = null;
-        this.professor = null;
-        this.days = null;
-        this.semester = null;
-        this.credits = 0;
+        subject = null;
+        professor = null;
+        days = null;
+        semester = null;
+        credits = 0;
     }
 
-    // setters for filtering
-    public void setDepartment(String department) {
-        this.department = department;
+    // setters
+
+    public void setSubject(String subject) {
+        this.subject = subject;
     }
+
     public void setProfessor(String professor) {
         this.professor = professor;
     }
+
     public void setDays(String[] days) {
         this.days = days;
     }
+
     public void setSemester(String semester) {
         this.semester = semester;
     }
+
     public void setCredits(int credits) {
         this.credits = credits;
     }
 
+    // Main filtering method
 
-    // Methods
-    public ArrayList<Course> returnResults(Course[] courses) {
-        ArrayList<Course> results = new ArrayList<>(); // arraylist of matching courses
-
-        for (Course myCourse : courses) {
-            if (matches(myCourse)) {
-                results.add(myCourse);
-            }
+    public List<Course> apply(List<Course> courses) {
+        List<Course> results = new ArrayList<>();
+        for (Course c : courses) {
+            if (matches(c)) results.add(c);
         }
-
         return results;
     }
 
-    // method to check if a course matches the given filter
-    private boolean matches(Course myCourse) {
-        if (department != null && !department.equals(myCourse.getDepartment())) {
-            return false;
-        }
-        if (professor != null && !professor.equals(myCourse.getProfessor())) {
-            return false;
-        }
-        if (semester != null && !semester.equals(myCourse.getSemester())) {
-            return false;
-        }
-        if (credits > 0 && credits !=myCourse.getCredits()) {
-            return false;
-        }
-        if (days != null) {
-            String [] availableDays = days; // list of days that they are willing to meet
-            String [] courseDays = myCourse.getDays(); // list of days that the current course meets
 
-            for (String courseDay: courseDays) { // loop through each day that the course meets
+    // Check if a course matches
+
+    private boolean matches(Course course) {
+
+        // subject filter
+        if (subject != null &&
+                !subject.equals(course.getSubject())) {
+            return false;
+        }
+
+        // professor filter
+        if (professor != null) {
+
+            boolean found = false;
+
+            for (String facultyMember : course.getFaculty()) {
+                if (facultyMember.equals(professor)) {
+                    found = true;
+                    break;
+                }
+            }
+
+            if (!found) {
+                return false;
+            }
+        }
+
+        // semester filter
+        if (semester != null &&
+                !semester.equals(course.getSemester())) {
+            return false;
+        }
+
+        // credits filter
+        if (credits > 0 &&
+                credits != course.getCredits()) {
+            return false;
+        }
+
+        // days filter
+        if (days != null) {
+
+            for (TimeSlot slot : course.getTimes()) {
+
                 boolean match = false;
 
-                for (String availableDay: availableDays) { // loop through each available day
-                    if (courseDay.equals(availableDay)) {
-                        match = true; // once we find a match, we know that the current day that the course meets is one that the user is available on
-                        break; // move on to the next course day
+                for (String day : days) {
+                    if (slot.getDay().equals(day)) {
+                        match = true;
+                        break;
                     }
                 }
+
                 if (!match) {
-                    return false; // course meets on a day that the user hasn't selected, return false
+                    return false;
                 }
             }
         }

@@ -1,7 +1,64 @@
+/* Container grid for the whole schedule */
+.schedule {
+  display: grid;
+  grid-template-columns: 60px repeat(5, 1fr); /* 1st column = times, next 5 = Mon-Fri */
+  border: 1px solid #ccc;
+  position: relative;
+  margin: 20px;
+  height: 600px; /* adjust to fit your screen */
+  background-color: #fdfdfd;
+  font-family: Arial, sans-serif;
+}
+
+/* Each column (time or day) */
+.day-column {
+  border-left: 1px solid #ccc;
+  position: relative; /* needed for absolute-positioned blocks */
+  padding-top: 20px; /* leave space for day header */
+}
+
+/* Day header */
+.day-column h2 {
+  text-align: center;
+  margin: 0;
+  padding: 5px 0;
+  background-color: #f5f5f5;
+  border-bottom: 1px solid #ccc;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  font-size: 14px;
+}
+
+/* Time labels on the left column */
+.time-label {
+  height: 40px; /* same as hourHeight */
+  border-bottom: 1px solid #eee;
+  padding-right: 5px;
+  text-align: right;
+  font-size: 12px;
+  color: #666;
+  box-sizing: border-box;
+}
+
+/* Individual course block */
 .class-block {
-  border: 1px solid #444;
-  background-color: lightblue;
-  padding: 6px;
-  margin: 4px 0;
+  position: absolute; /* absolute inside day-column */
+  left: 2px;
+  right: 2px;
+  padding: 4px 6px;
   border-radius: 4px;
+  color: white;
+  font-size: 12px;
+  overflow: hidden;
+  box-sizing: border-box;
+  cursor: pointer;
+  border: 1px solid rgba(0,0,0,0.1);
+  transition: transform 0.1s;
+}
+
+/* Optional: hover effect for class blocks */
+.class-block:hover {
+  transform: scale(1.02);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
 }

@@ -1,0 +1,7 @@
+.class-block {
+  border: 1px solid #444;
+  background-color: lightblue;
+  padding: 6px;
+  margin: 4px 0;
+  border-radius: 4px;
+}

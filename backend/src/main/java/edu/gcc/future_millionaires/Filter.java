@@ -65,7 +65,7 @@ public class Filter {
         if (department != null && !department.equals(myCourse.getDepartment())) {
             return false;
         }
-        if (professor != null && !professor.equals(myCourse.getProfessor())) {
+        if (professor != null && !professor.equals(myCourse.getFaculty())) {
             return false;
         }
         if (semester != null && !semester.equals(myCourse.getSemester())) {

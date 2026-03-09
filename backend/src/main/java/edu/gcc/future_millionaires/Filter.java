@@ -1,6 +1,7 @@
 package edu.gcc.future_millionaires;
-
+import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.List;
 
 public class Filter {
 
@@ -10,6 +11,7 @@ public class Filter {
     private String[] days;
     private String semester;
     private int credits;
+    private List<LocalTime[]> timeRanges; // arrayList of arrays - each inner array with have exactly 2 elements (start and stop time)
 
     // class methods
 
@@ -21,6 +23,7 @@ public class Filter {
         this.days = null;
         this.semester = null;
         this.credits = 0;
+        this.timeRanges = null;
     }
 
     // setters for filtering
@@ -38,6 +41,9 @@ public class Filter {
     }
     public void setCredits(int credits) {
         this.credits = credits;
+    }
+    public void setTimeRanges(List<LocalTime[]> timeRanges) {
+        this.timeRanges = timeRanges;
     }
 
 
@@ -83,6 +89,32 @@ public class Filter {
                 }
                 if (!match) {
                     return false; // course meets on a day that the user hasn't selected, return false
+                }
+            }
+        }
+        if (timeRanges != null) {
+            List<LocalTime[]> availableTimes = timeRanges;
+            List<LocalTime[]> courseTimes = myCourse.getMeetingTime();
+
+            // loop through each time that the course meets
+            for (LocalTime[] courseTime: courseTimes) {
+                boolean inRange = false;
+
+                // loop through the times that the user is available
+                for (LocalTime[] availableTime: availableTimes) {
+                    // to be in range, course start time must not be before available start time
+                    if (!courseTime[0].isBefore(availableTime[0])) {
+                        // to be in range, course end time must not be after available end time
+                        if (!courseTime[1].isAfter(availableTime[1])) {
+                            inRange = true;
+                            break; // we've found a valid available time range for this course, this course time is valid
+                        }
+                    }
+                }
+                // once we reach here, we've checked all the time ranges in availableTimes
+                // if inRange is still false, none of the available times work for the given course
+                if (!inRange) {
+                    return false;
                 }
             }
         }

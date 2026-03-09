@@ -1,64 +1,171 @@
-/* Container grid for the whole schedule */
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=DM+Sans:wght@400;500;600;700&display=swap');
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: #0a0f1a;
+  font-family: 'DM Sans', sans-serif;
+}
+
+/* ── Page wrapper ── */
+.planner-root {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #0a0f1a 0%, #0f172a 50%, #0a0f1a 100%);
+  padding: 32px 24px;
+}
+
+/* ── Header ── */
+.planner-eyebrow {
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  color: #475569;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.planner-title {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(24px, 4vw, 36px);
+  font-weight: 800;
+  color: #f1f5f9;
+  letter-spacing: -0.02em;
+}
+
+.planner-legend {
+  margin-top: 10px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.legend-chip {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  border-radius: 4px;
+  padding: 3px 8px;
+}
+
+/* ── Schedule grid ── */
 .schedule {
   display: grid;
-  grid-template-columns: 60px repeat(5, 1fr); /* 1st column = times, next 5 = Mon-Fri */
-  border: 1px solid #ccc;
-  position: relative;
-  margin: 20px;
-  height: 600px; /* adjust to fit your screen */
-  background-color: #fdfdfd;
-  font-family: Arial, sans-serif;
-}
-
-/* Each column (time or day) */
-.day-column {
-  border-left: 1px solid #ccc;
-  position: relative; /* needed for absolute-positioned blocks */
-  padding-top: 20px; /* leave space for day header */
-}
-
-/* Day header */
-.day-column h2 {
-  text-align: center;
-  margin: 0;
-  padding: 5px 0;
-  background-color: #f5f5f5;
-  border-bottom: 1px solid #ccc;
-  position: sticky;
-  top: 0;
-  z-index: 2;
-  font-size: 14px;
-}
-
-/* Time labels on the left column */
-.time-label {
-  height: 40px; /* same as hourHeight */
-  border-bottom: 1px solid #eee;
-  padding-right: 5px;
-  text-align: right;
-  font-size: 12px;
-  color: #666;
-  box-sizing: border-box;
-}
-
-/* Individual course block */
-.class-block {
-  position: absolute; /* absolute inside day-column */
-  left: 2px;
-  right: 2px;
-  padding: 4px 6px;
-  border-radius: 4px;
-  color: white;
-  font-size: 12px;
+  grid-template-columns: 52px repeat(5, 1fr);
+  border: 1px solid #1e293b;
+  border-radius: 12px;
   overflow: hidden;
-  box-sizing: border-box;
-  cursor: pointer;
-  border: 1px solid rgba(0,0,0,0.1);
-  transition: transform 0.1s;
+  background: #0d1420;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5);
+  margin-top: 24px;
 }
 
-/* Optional: hover effect for class blocks */
+/* ── Time column ── */
+.time-column {
+  position: relative;
+  border-right: 1px solid #1e293b;
+}
+
+.time-column-header {
+  border-bottom: 1px solid #1e293b;
+}
+
+.time-label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-bottom: 1px solid #131d2e;
+  color: #334155;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+}
+
+/* ── Day column ── */
+.day-column {
+  position: relative;
+  border-left: 1px solid #1e293b;
+}
+
+.day-column-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #0d1420;
+  border-bottom: 1px solid #1e293b;
+}
+
+.day-header-abbr {
+  font-size: 10px;
+  color: #334155;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.day-header-name {
+  font-size: 14px;
+  color: #475569;
+  font-weight: 700;
+}
+
+.hour-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  border-bottom: 1px solid #131d2e;
+  pointer-events: none;
+}
+
+/* ── Class block ── */
+.class-block {
+  position: absolute;
+  left: 4px;
+  right: 4px;
+  border-radius: 6px;
+  padding: 6px 8px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.15s ease, background-color 0.15s ease;
+  border-left-width: 3px;
+  border-left-style: solid;
+  border-top: none;
+  border-right: none;
+  border-bottom: none;
+}
+
 .class-block:hover {
-  transform: scale(1.02);
-  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  transform: translateX(2px);
+}
+
+.class-block-name {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.class-block-time {
+  font-size: 10px;
+  color: #94a3b8;
+  margin-top: 2px;
+}
+
+.class-block-room {
+  font-size: 10px;
+  color: #64748b;
+  margin-top: 1px;
+}
+
+/* ── Footer hint ── */
+.planner-hint {
+  margin-top: 14px;
+  text-align: center;
+  font-size: 11px;
+  color: #1e293b;
+  letter-spacing: 0.05em;
 }

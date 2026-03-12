@@ -26,7 +26,7 @@ public class Course {
     private String semester;
     private String subject;
 
-    private List<TimeSlot> times;
+    private List<TimeSlot> times; // [{"day":"T","end_time":"16:45:00","start_time":"15:30:00"},{"day":"R","end_time":"16:45:00","start_time":"15:30:00"}]
 
     @JsonProperty("total_seats")
     private int totalSeats;

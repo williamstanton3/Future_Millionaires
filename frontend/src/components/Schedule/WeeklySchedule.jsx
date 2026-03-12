@@ -30,16 +30,18 @@ export default function WeeklySchedule() {
         </div>
       </div>
 
-      {/* Grid */}
-      <div className="schedule">
-        <TimeColumn />
-        {DAYS.map((day) => (
-          <DayColumn
-            key={day}
-            day={day}
-            courses={courses}
-          />
-        ))}
+      {/* Grid wrapper: scrollable if too tall */}
+      <div className="schedule-wrapper">
+        <div className="schedule">
+          <TimeColumn />
+          {DAYS.map((day) => (
+            <DayColumn
+              key={day}
+              day={day}
+              courses={courses}
+            />
+          ))}
+        </div>
       </div>
     </div>
   );

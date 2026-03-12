@@ -7,7 +7,7 @@ import java.util.List;
 public class Filter {
 
     // filter criteria
-    private String courseCode; // COMP 422
+    private int number; // 422
     private String department; // COMP
     private String[] professors; // ["Graybill, Keith B."]
     // times can be a day ("M") or a day + time range ("T 15:30:00-16:45:00")
@@ -27,7 +27,7 @@ public class Filter {
     }
 
     // Setters
-    public void setCourseCode(String subject, int number) { courseCode = subject + " " + number; }
+    public void setCourseCode(String subject, int number) { department = subject; this.number = number; }
     public void setDepartment(String subject) { department = subject; }
     public void setProfessors(String[] professor) { professors = professor; }
     public void setTimes(String[] times) { this.times = times; }
@@ -49,9 +49,9 @@ public class Filter {
 
     private boolean matches(Course course) {
 
-        // courseCode filter
-        if (courseCode != null &&
-                !courseCode.equals(course.getSubject() + " " + course.getNumber()))
+        // course code filter
+        if (number > 0 &&
+                number != course.getNumber())
             return false;
 
         // department filter

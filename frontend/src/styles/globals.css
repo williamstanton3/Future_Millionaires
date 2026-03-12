@@ -1,0 +1,17 @@
+/* src/index.css or src/styles/globals.css */
+@import "@fontsource-variable/inter";
+
+/* Tailwind base layers */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Shadcn theme tokens */
+:root {
+  --border:  hsl(210 16% 93%);
+  --input:   hsl(0 0% 100%);
+  --ring:    hsl(215 20% 65%);
+  --background: hsl(0 0% 100%);
+  --foreground: hsl(222 47% 11%);
+  /* add more tokens from shadcn preset if needed */
+}

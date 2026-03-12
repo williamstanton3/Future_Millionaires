@@ -1,0 +1,15 @@
+/* src/index.css */
+@import "@fontsource-variable/inter";  /* optional, only if you want fonts */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* shadcn theme tokens */
+:root {
+  --border: hsl(210 16% 93%);
+  --input: hsl(0 0% 100%);
+  --ring: hsl(215 20% 65%);
+  --background: hsl(0 0% 100%);
+  --foreground: hsl(222 47% 11%);
+}

@@ -8,6 +8,7 @@ public class Main {
     public static void main(String[] args) {
 
         CourseList courseList = new CourseList();
+        Student student = new Student(1);
 
         Javalin app = Javalin.create(config -> {
             config.bundledPlugins.enableCors(cors -> {
@@ -18,5 +19,6 @@ public class Main {
         }).start(7070);
 
         new CourseController(app, courseList);
+        new ScheduleController(app, student, courseList);
     }
 }

@@ -27,8 +27,8 @@ public class Filter {
     }
 
     // Setters
-    public void setCourseCode(String subject, int number) { department = subject; this.number = number; }
     public void setDepartment(String subject) { department = subject; }
+    public void setNumber(int n) { number = n; }
     public void setProfessors(String[] professor) { professors = professor; }
     public void setTimes(String[] times) { this.times = times; }
     public void setSemester(String semester) { this.semester = semester; }
@@ -66,7 +66,7 @@ public class Filter {
             // loop through the list of professors given in the filter
             for (String prof : professors) {
                 // if the list of faculty for this given course contains the prof we are looking for, return true
-                if (course.getFaculty().contains(prof)) {
+                if (course.getFaculty().stream().anyMatch(f -> f.toLowerCase().contains(prof.toLowerCase()))) {
                     found = true;
                     break;
                 }

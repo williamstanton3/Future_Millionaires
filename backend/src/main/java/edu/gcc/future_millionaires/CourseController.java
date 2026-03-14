@@ -9,25 +9,18 @@ public class CourseController {
         app.get("/courses", ctx -> {
             Filter filter = new Filter();
 
-            String courseCode = ctx.queryParam("courseCode");
-            if (courseCode != null) {
-                // expects "COMP 422" — split into subject + number
-                String[] parts = courseCode.split(" ");
-                if (parts.length == 2) {
-                    try {
-                        filter.setCourseCode(parts[0], Integer.parseInt(parts[1]));
-                    } catch (NumberFormatException e) {
-                        ctx.status(400).result("Invalid courseCode format. Expected format: 'COMP 422'");
-                        return;
-                    }
-                } else {
-                    ctx.status(400).result("Invalid courseCode format. Expected format: 'COMP 422'");
+            String department = ctx.queryParam("department");
+            if (department != null) filter.setDepartment(department);
+
+            String numberParam = ctx.queryParam("number");
+            if (numberParam != null) {
+                try {
+                    filter.setNumber(Integer.parseInt(numberParam));
+                } catch (NumberFormatException e) {
+                    ctx.status(400).result("Invalid number value: must be an integer");
                     return;
                 }
             }
-
-            String department = ctx.queryParam("department");
-            if (department != null) filter.setDepartment(department);
 
             String[] professors = ctx.queryParams("professors").toArray(new String[0]);
             if (professors.length > 0) filter.setProfessors(professors);

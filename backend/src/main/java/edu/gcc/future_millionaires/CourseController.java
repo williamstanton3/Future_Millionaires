@@ -2,6 +2,11 @@ package edu.gcc.future_millionaires;
 
 import io.javalin.Javalin;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 public class CourseController {
 
     public CourseController(Javalin app, CourseList courseList) {
@@ -45,6 +50,50 @@ public class CourseController {
             if (keyword != null) filter.setKeyword(keyword);
 
             ctx.json(filter.apply(courseList.getCourses()));
+        });
+
+        app.get("/courses/meta", ctx -> {
+            List<Course> courses = courseList.getCourses();
+            Map<String, Object> meta = new HashMap<>();
+
+            meta.put("departments", courses.stream()
+                    .map(Course::getSubject)
+                    .filter(s -> s != null)
+                    .distinct()
+                    .sorted()
+                    .collect(Collectors.toList()));
+
+            meta.put("numbers", courses.stream()
+                    .mapToInt(Course::getNumber)
+                    .distinct()
+                    .sorted()
+                    .boxed()
+                    .collect(Collectors.toList()));
+
+            meta.put("semesters", courses.stream()
+                    .map(Course::getSemester)
+                    .filter(s -> s != null)
+                    .distinct()
+                    .sorted()
+                    .map(s -> {
+                        // convert "2023_Fall" -> { value: "2023_Fall", label: "Fall 2023" }
+                        String[] parts = s.split("_");
+                        String label = parts.length == 2 ? parts[1] + " " + parts[0] : s;
+                        Map<String, String> entry = new HashMap<>();
+                        entry.put("value", s);
+                        entry.put("label", label);
+                        return entry;
+                    })
+                    .collect(Collectors.toList()));
+
+            meta.put("credits", courses.stream()
+                    .mapToInt(Course::getCredits)
+                    .distinct()
+                    .sorted()
+                    .boxed()
+                    .collect(Collectors.toList()));
+
+            ctx.json(meta);
         });
     }
 }

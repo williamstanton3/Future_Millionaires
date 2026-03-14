@@ -57,13 +57,13 @@ class FilterTest {
             List.of(comp422, comp310, acct201, math101, hist200, phys101);
 
     // ---------------------------------------------------------
-    // COURSE CODE
+    // NUMBER
     // ---------------------------------------------------------
 
     @Test
-    void filterByCourseCode_match() {
+    void filterByNumber_match() {
         Filter f = new Filter();
-        f.setCourseCode("COMP",422);
+        f.setNumber(422);
 
         List<Course> results = f.apply(allCourses);
 
@@ -72,9 +72,30 @@ class FilterTest {
     }
 
     @Test
-    void filterByCourseCode_noMatch() {
+    void filterByNumber_noMatch() {
         Filter f = new Filter();
-        f.setCourseCode("COMP",999);
+        f.setNumber(999);
+
+        assertTrue(f.apply(allCourses).isEmpty());
+    }
+
+    @Test
+    void filterByNumber_and_department_match() {
+        Filter f = new Filter();
+        f.setDepartment("COMP");
+        f.setNumber(422);
+
+        List<Course> results = f.apply(allCourses);
+
+        assertEquals(1, results.size());
+        assertEquals(422, results.get(0).getNumber());
+    }
+
+    @Test
+    void filterByNumber_and_department_noMatch() {
+        Filter f = new Filter();
+        f.setDepartment("COMP");
+        f.setNumber(999);
 
         assertTrue(f.apply(allCourses).isEmpty());
     }
@@ -108,7 +129,7 @@ class FilterTest {
     @Test
     void filterByProfessors_singleMatch() {
         Filter f = new Filter();
-        f.setProfessors(new String[]{"Inman, John G."});
+        f.setProfessors(new String[]{"inman"});
 
         List<Course> results = f.apply(allCourses);
 
@@ -118,9 +139,19 @@ class FilterTest {
     }
 
     @Test
-    void filterByProfessors_multipleMatch() {
+    void filterByProfessors_caseInsensitive() {
         Filter f = new Filter();
-        f.setProfessors(new String[]{"Graybill, Keith B."});
+        f.setProfessors(new String[]{"GRAYBILL"});
+
+        List<Course> results = f.apply(allCourses);
+
+        assertEquals(2, results.size());
+    }
+
+    @Test
+    void filterByProfessors_partialName() {
+        Filter f = new Filter();
+        f.setProfessors(new String[]{"graybill"});
 
         List<Course> results = f.apply(allCourses);
 
@@ -130,7 +161,7 @@ class FilterTest {
     @Test
     void filterByProfessors_noMatch() {
         Filter f = new Filter();
-        f.setProfessors(new String[]{"Fake Professor"});
+        f.setProfessors(new String[]{"fake professor"});
 
         assertTrue(f.apply(allCourses).isEmpty());
     }
@@ -138,7 +169,7 @@ class FilterTest {
     @Test
     void filterByProfessors_emptyFacultyCourse() {
         Filter f = new Filter();
-        f.setProfessors(new String[]{"Shultz, Tricia Michele"});
+        f.setProfessors(new String[]{"shultz"});
 
         List<Course> results = f.apply(allCourses);
 
@@ -287,7 +318,7 @@ class FilterTest {
     void filter_department_and_professor() {
         Filter f = new Filter();
         f.setDepartment("COMP");
-        f.setProfessors(new String[]{"Graybill, Keith B."});
+        f.setProfessors(new String[]{"graybill"});
 
         List<Course> results = f.apply(allCourses);
 
@@ -308,7 +339,7 @@ class FilterTest {
     @Test
     void filter_professor_and_time() {
         Filter f = new Filter();
-        f.setProfessors(new String[]{"Graybill, Keith B."});
+        f.setProfessors(new String[]{"graybill"});
         f.setTimes(new String[]{"T 15:30:00-16:45:00"});
 
         List<Course> results = f.apply(allCourses);
@@ -330,7 +361,7 @@ class FilterTest {
     @Test
     void filter_keyword_and_time() {
         Filter f = new Filter();
-        f.setKeyword("Graybill");
+        f.setKeyword("graybill");
         f.setTimes(new String[]{"T 15:30:00-16:45:00"});
 
         List<Course> results = f.apply(allCourses);

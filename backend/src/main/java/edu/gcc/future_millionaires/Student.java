@@ -1,4 +1,4 @@
-//package edu.gcc.comp350;
+package edu.gcc.future_millionaires;//package edu.gcc.comp350;
 import java.util.ArrayList;
 
 public class Student {

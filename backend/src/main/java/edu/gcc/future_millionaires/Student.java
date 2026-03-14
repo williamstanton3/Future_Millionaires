@@ -1,20 +1,36 @@
-package edu.gcc.future_millionaires;//package edu.gcc.comp350;
+package edu.gcc.future_millionaires;
+
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Student {
 
-    // private class variables
-    private int studentID;
-    private ArrayList<String> major;
-    private ArrayList<String> minor;
-    private int expectedGradYear;
-    private ArrayList<String> transcript;
-
-    // class methods
+    private final int studentID;
+    private Map<String, Schedule> schedules;
+    private String activeSemester;
 
     // Constructor
-    public Student() {
+    public Student(int studentID) {
+        this.studentID = studentID;
+        this.schedules = new HashMap<>();
+        this.activeSemester = null;
+    }
 
+    // Set the active semester — creates a new Schedule for it if one doesn't exist yet
+    public void setActiveSemester(String semester) {
+        this.activeSemester = semester;
+        schedules.putIfAbsent(semester, new Schedule(studentID, semester));
+    }
+
+    public String getActiveSemester() {
+        return activeSemester;
+    }
+
+    // Returns the schedule for the active semester, or null if none is set
+    public Schedule getActiveSchedule() {
+        if (activeSemester == null) return null;
+        return schedules.get(activeSemester);
     }
 
     // Add a course to the transcript
@@ -23,17 +39,9 @@ public class Student {
     }
 
     // Change major
-    public void changeMajor(ArrayList<String> newMajor) {
 
-    }
 
-    // Change minor
-    public void changeMinor(ArrayList<String> newMinor) {
-
-    }
-
-    // Change graduation year
-    public void changeGradYear(int newYear) {
-
+    public int getStudentID() {
+        return studentID;
     }
 }

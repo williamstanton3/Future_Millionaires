@@ -1,49 +1,50 @@
+// src/components/Schedule/DayColumn.jsx
 import React from "react";
-import ClassBlock from "./ClassBlock";
+import "./Schedule.css";
 
-const DAY_LABELS = { Mon: "Mon", Tue: "Tue", Wed: "Wed", Thu: "Thu", Fri: "Fri" };
-
-const DayColumn = ({ day, courses, startHour = 8, endHour = 18, hourHeight = 56, }) => {
-  const totalHeight = (endHour - startHour) * hourHeight + 48; // 48 = HEADER_HEIGHT
-  const timeToTop = (timeStr) => {
-      const [hour, minute] = timeStr.split(":").map(Number);
-      return (hour + minute / 60 - startHour) * hourHeight;
-    };
+export default function DayColumn({ day, courses }) {
+  const dayCourses = courses.filter(course =>
+    course.times.some(t => t.day === day)
+  );
 
   return (
-    <div className="day-column" style={{ height: totalHeight + "px" }}>
-      {/* Header */}
-      <div className="day-column-header" style={{ height: "48px" }}>
-        <span className="day-header-abbr">{day}</span>
-        <span className="day-header-name">{DAY_LABELS[day]}</span>
+    <div className="day-column">
+      <div className="day-column-header">
+        <div className="day-header-abbr">{day}</div>
       </div>
 
-      {/* Hour grid lines */}
-      {Array.from({ length: endHour - startHour }).map((_, i) => (
-        <div
-          key={i}
-          className="hour-line"
-          style={{ top: 48 + i * hourHeight + "px", height: hourHeight + "px" }}
-        />
-      ))}
+      <div className="day-column-body">
+        {dayCourses.map(course =>
+          course.times
+            .filter(t => t.day === day)
+            .map((t, idx) => {
+              // Calculate vertical position
+              const startH = Number(t.start.split(":")[0]);
+              const startM = Number(t.start.split(":")[1]);
+              const endH = Number(t.end.split(":")[0]);
+              const endM = Number(t.end.split(":")[1]);
 
-      {/* Course blocks */}
-      {courses
-        .filter((course) => course.days.includes(day))
-        .map((course) => {
-          const top = timeToTop(course.start);
-          const height = timeToTop(course.end) - top;
-          return (
-            <ClassBlock
-              key={course.id}
-              course={course}
-              top={top}
-              height={height}
-            />
-          );
-        })}
+              const top = ((startH - 8) * 60 + startM); // 60px per hour
+              const height = ((endH - startH) * 60 + (endM - startM));
+
+              return (
+                <div
+                  key={idx}
+                  className="class-block"
+                  style={{
+                    top: `${top}px`,
+                    height: `${height}px`,
+                    backgroundColor: "#1e40af88",
+                    borderColor: "#1e40af",
+                  }}
+                >
+                  <div className="class-block-name">{course.name}</div>
+                  <div className="class-block-time">{t.start} - {t.end}</div>
+                </div>
+              );
+            })
+        )}
+      </div>
     </div>
   );
-};
-
-export default DayColumn;
+}

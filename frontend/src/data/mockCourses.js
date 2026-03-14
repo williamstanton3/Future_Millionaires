@@ -1,7 +1,80 @@
+// Mock courses array
 export const courses = [
-  { id: 1, name: "COMP 350", days: ["Mon", "Wed"], start: "09:00", end: "10:15", color: "#7DA3F2", room: "SCI 204" },
-  { id: 2, name: "MATH 201", days: ["Tue", "Thu"], start: "10:00", end: "11:15", color: "#F2A97D", room: "MATH 110" },
-  { id: 3, name: "ENG 102",  days: ["Mon", "Wed", "Fri"], start: "12:00", end: "12:50", color: "#84D9A8", room: "HUM 301" },
-  { id: 4, name: "PHYS 210", days: ["Tue", "Thu"], start: "13:00", end: "14:15", color: "#E89EDB", room: "SCI 101" },
-  { id: 5, name: "HIST 220", days: ["Fri"], start: "09:00", end: "11:45", color: "#F2D97D", room: "SOC 205" },
+  {
+    id: 1,
+    subject: "CS",
+    number: 101,
+    name: "Intro to Computer Science",
+    section: "A",
+    semester: "2024_Fall",
+    credits: 3,
+    faculty: ["Dr. Smith"],
+    location: "Room 101",
+    isLab: false,
+    isOpen: true,
+    openSeats: 10,
+    totalSeats: 30,
+    times: [
+      { day: "M", start_time: "09:00", end_time: "10:15" },
+      { day: "W", start_time: "09:00", end_time: "10:15" }
+    ]
+  },
+  {
+    id: 2,
+    subject: "MATH",
+    number: 201,
+    name: "Calculus I",
+    section: "B",
+    semester: "2024_Fall",
+    credits: 4,
+    faculty: ["Prof. Johnson"],
+    location: "Room 203",
+    isLab: false,
+    isOpen: true,
+    openSeats: 5,
+    totalSeats: 25,
+    times: [
+      { day: "T", start_time: "10:30", end_time: "11:45" },
+      { day: "R", start_time: "10:30", end_time: "11:45" }
+    ]
+  },
+  {
+    id: 3,
+    subject: "ENG",
+    number: 150,
+    name: "English Literature",
+    section: "C",
+    semester: "2024_Fall",
+    credits: 3,
+    faculty: ["Dr. Lee"],
+    location: "Room 305",
+    isLab: false,
+    isOpen: true,
+    openSeats: 12,
+    totalSeats: 30,
+    times: [
+      { day: "M", start_time: "11:00", end_time: "12:15" },
+      { day: "W", start_time: "11:00", end_time: "12:15" },
+      { day: "F", start_time: "11:00", end_time: "12:15" }
+    ]
+  },
+  {
+    id: 4,
+    subject: "PHYS",
+    number: 101,
+    name: "General Physics",
+    section: "A",
+    semester: "2024_Fall",
+    credits: 4,
+    faculty: ["Dr. Brown"],
+    location: "Lab 2",
+    isLab: true,
+    isOpen: true,
+    openSeats: 8,
+    totalSeats: 20,
+    times: [
+      { day: "T", start_time: "13:00", end_time: "14:15" },
+      { day: "R", start_time: "13:00", end_time: "14:15" }
+    ]
+  }
 ];

@@ -1,166 +1,60 @@
-/* ── Page wrapper ── */
-.planner-root {
-  /* Remove background — body provides gradient now */
-  background: transparent;
-  padding: 32px 24px;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-/* ── Header ── */
-.planner-eyebrow {
-  font-size: 11px;
-  letter-spacing: 0.2em;
-  color: #475569;
-  text-transform: uppercase;
-  margin-bottom: 6px;
-}
-
-.planner-title {
-  font-family: 'Playfair Display', serif;
-  font-size: clamp(24px, 4vw, 36px);
-  font-weight: 800;
-  color: #f1f5f9;
-  letter-spacing: -0.02em;
-}
-
-.planner-legend {
-  margin-top: 10px;
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-
-.legend-chip {
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  border-radius: 4px;
-  padding: 3px 8px;
-}
-
-/* ── Schedule grid ── */
 .schedule-wrapper {
-  max-height: 600px;
-  overflow-y: auto;
-  margin-top: 24px;
+  overflow-x: auto;
 }
 
 .schedule {
   display: grid;
-  grid-template-columns: 52px repeat(5, 1fr);
+  grid-template-columns: 75px repeat(5, 1fr);
+  position: relative;
   border: 1px solid #1e293b;
   border-radius: 12px;
-  overflow: hidden;
-  background: #0d1420; /* slightly darker than page gradient */
-  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5);
+  background: #0d1420;
 }
 
-/* ── Time column ── */
 .time-column {
-  position: relative;
-  border-right: 1px solid #1e293b;
-}
-
-.time-column-header {
-  border-bottom: 1px solid #1e293b;
+  display: flex;
+  flex-direction: column;
 }
 
 .time-label {
+  height: 60px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-bottom: 1px solid #131d2e;
-  color: #334155;
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.05em;
+  border-bottom: 1px solid #333;
+  color: #fff;
 }
 
-/* ── Day column ── */
 .day-column {
   position: relative;
   border-left: 1px solid #1e293b;
 }
 
 .day-column-header {
+  height: 40px;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: #0d1420;
   border-bottom: 1px solid #1e293b;
+  color: #ccc;
 }
 
-.day-header-abbr {
-  font-size: 10px;
-  color: #334155;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  font-weight: 600;
+.day-column-body {
+  position: relative;
 }
 
-.day-header-name {
-  font-size: 14px;
-  color: #475569;
-  font-weight: 700;
-}
-
-.hour-line {
-  position: absolute;
-  left: 0;
-  right: 0;
-  border-bottom: 1px solid #131d2e;
-  pointer-events: none;
-}
-
-/* ── Class block ── */
 .class-block {
   position: absolute;
   left: 4px;
   right: 4px;
-  border-radius: 6px;
-  padding: 6px 8px;
+  border-left: 3px solid;
+  border-radius: 4px;
+  padding: 4px;
+  color: #fff;
+  font-size: 12px;
   overflow: hidden;
-  cursor: pointer;
-  transition: transform 0.15s ease, background-color 0.15s ease;
-  border-left-width: 3px;
-  border-left-style: solid;
-  border-top: none;
-  border-right: none;
-  border-bottom: none;
 }
 
-.class-block:hover {
-  transform: translateX(2px);
-}
-
-.class-block-name {
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-}
-
-.class-block-time {
-  font-size: 10px;
-  color: #94a3b8;
-  margin-top: 2px;
-}
-
-.class-block-room {
-  font-size: 10px;
-  color: #64748b;
-  margin-top: 1px;
-}
-
-/* ── Footer hint ── */
-.planner-hint {
-  margin-top: 14px;
-  text-align: center;
-  font-size: 11px;
-  color: #1e293b;
-  letter-spacing: 0.05em;
+.day-column-header-spacer {
+  height: 40px; /* same height as .day-column-header */
 }

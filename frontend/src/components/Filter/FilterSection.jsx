@@ -49,7 +49,11 @@ export default function FilterSection({ semesters = [], departments = [], maxCou
           <SelectValue placeholder="Select Semester" />
         </SelectTrigger>
         <SelectContent>
-          {semesters.map(s => <SelectItem key={s} value={s}>{formatSemester(s)}</SelectItem>)}
+          {semesters.map(s => (
+            <SelectItem key={s.value} value={s.value}>
+              {s.label}
+            </SelectItem>
+          ))}
         </SelectContent>
       </Select>
 

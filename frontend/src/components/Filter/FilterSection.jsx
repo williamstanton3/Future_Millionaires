@@ -10,7 +10,7 @@ const formatSemester = (s) => {
   return `${term.charAt(0).toUpperCase() + term.slice(1)} ${year}`;
 };
 
-export default function FilterSection({ semesters = [], departments = [], maxCourseNumber = 499, onFilter }) {
+export default function FilterSection({ semesters = [], departments = [], maxCourseNumber = 499, creditOptions=[], onFilter }) {
   const [semester, setSemester] = useState("");
   const [keyword, setKeyword] = useState("");
   const [department, setDepartment] = useState("");
@@ -105,7 +105,7 @@ export default function FilterSection({ semesters = [], departments = [], maxCou
           <SelectValue placeholder="Credits" />
         </SelectTrigger>
         <SelectContent>
-          {[1,2,3,4,5].map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+            {creditOptions.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
         </SelectContent>
       </Select>
 

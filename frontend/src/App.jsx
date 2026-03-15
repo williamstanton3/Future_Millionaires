@@ -1,45 +1,45 @@
 // src/App.jsx
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import WeeklySchedule from "./components/Schedule/WeeklySchedule";
 import FilterSection from "./components/Filter/FilterSection";
-
-// Mock data
-import { semesters, departments } from "./data/mockFilters";
-import { courses as allCourses } from "./data/mockCourses";
+import { fetchMeta, fetchCourses } from "./api/CourseApi"
+import CourseList from "./components/Courses/CourseList";
 
 export default function App() {
-  const [filteredCourses, setFilteredCourses] = useState(allCourses);
+  const [meta, setMeta] = useState({
+    departments: [],
+    numbers: [],
+    semesters: [],
+    credits: [],
+  });
+  const [courses, setCourses] = useState([]);
 
-  const handleFilter = (filters) => {
-    // Simple local filter
-    const results = allCourses.filter((course) => {
-      if (filters.keyword && !course.name.toLowerCase().includes(filters.keyword.toLowerCase())) return false;
-      if (filters.department && course.department !== filters.department) return false;
-      if (filters.course_number && course.courseNumber.toString() !== filters.course_number.toString()) return false;
-      if (filters.professor && !course.faculty.includes(filters.professor)) return false;
-      if (filters.semester && course.semester !== filters.semester) return false;
-      if (filters.credits && course.credits !== Number(filters.credits)) return false;
-      if (filters.days && filters.days.length > 0) {
-        const dayMatch = course.times.some(slot => filters.days.includes(slot.day));
-        if (!dayMatch) return false;
+  // Fetch metadata once
+  useEffect(() => {
+      fetchMeta().then((data) => setMeta(data))
+  }, []);
+
+  // Called when Apply is clicked
+    const handleFilter = async (filters) => {
+      try {
+        const data = await fetchCourses(filters);
+        setCourses(data);
+      } catch (err) {
+        console.error("Failed to fetch courses:", err);
       }
-      return true;
-    });
-    setFilteredCourses(results);
-  };
+    };
 
   return (
     <div className="min-h-screen bg-gray-900 p-4 flex flex-col gap-6">
-      {/* Filter Section */}
       <FilterSection
-        semesters={semesters}
-        departments={departments}
-        maxCourseNumber={499}
+        semesters={meta.semesters}
+        departments={meta.departments}
+        maxCourseNumber={Math.max(...meta.numbers, 499)}
+        credits={meta.credits}
         onFilter={handleFilter}
       />
-
-      {/* Schedule */}
-      <WeeklySchedule courses={filteredCourses} />
+      <CourseList courses={courses} />
+      <WeeklySchedule courses={courses} />
     </div>
   );
 }

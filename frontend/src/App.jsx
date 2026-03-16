@@ -1,3 +1,4 @@
+// src/App.jsx
 import React, { useState, useEffect } from "react";
 import WeeklySchedule from "./components/Schedule/WeeklySchedule";
 import FilterSection from "./components/Filter/FilterSection";
@@ -82,6 +83,12 @@ export default function App() {
     setSchedule((prev) => [...prev, normalized]);
   };
 
+  const handleRemoveCourse = (course) => {
+    setSchedule((prev) =>
+      prev.filter((c) => !(c.subject === course.subject && c.number === course.number && c.section === course.section))
+    );
+  };
+
   return (
     <div className="min-h-screen bg-gray-900 p-4 flex flex-col gap-6">
       <FilterSection
@@ -92,7 +99,7 @@ export default function App() {
         onFilter={handleFilter}
       />
       <CourseList courses={courses} onAddCourse={handleAddCourse} />
-      <WeeklySchedule courses={schedule} />
+      <WeeklySchedule courses={schedule} onRemoveCourse={handleRemoveCourse} />
     </div>
   );
 }

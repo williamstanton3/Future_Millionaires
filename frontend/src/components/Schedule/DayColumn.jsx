@@ -2,7 +2,7 @@
 import React from "react";
 import "./Schedule.css";
 
-export default function DayColumn({ day, courses }) {
+export default function DayColumn({ day, courses, onCourseClick }) {
   const dayCourses = courses.filter(course =>
     course.times.some(t => t.day === day)
   );
@@ -18,13 +18,12 @@ export default function DayColumn({ day, courses }) {
           course.times
             .filter(t => t.day === day)
             .map((t, idx) => {
-              // Calculate vertical position
               const startH = Number(t.start.split(":")[0]);
               const startM = Number(t.start.split(":")[1]);
               const endH = Number(t.end.split(":")[0]);
               const endM = Number(t.end.split(":")[1]);
 
-              const top = ((startH - 8) * 60 + startM); // 60px per hour
+              const top = ((startH - 8) * 60 + startM);
               const height = ((endH - startH) * 60 + (endM - startM));
 
               return (
@@ -34,9 +33,11 @@ export default function DayColumn({ day, courses }) {
                   style={{
                     top: `${top}px`,
                     height: `${height}px`,
-                    backgroundColor: "#1e40af88",
-                    borderColor: "#1e40af",
+                    backgroundColor: course.color ? `${course.color}33` : "#1e40af88",
+                    borderColor: course.color ?? "#1e40af",
+                    cursor: "pointer",
                   }}
+                  onClick={() => onCourseClick(course)}
                 >
                   <div className="class-block-name">{course.name}</div>
                   <div className="class-block-time">{t.start} - {t.end}</div>

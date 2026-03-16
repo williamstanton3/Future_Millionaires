@@ -9,7 +9,8 @@ export default function CourseList({ courses }) {
       {courses.length === 0 ? (
         <p>No courses found</p>
       ) : (
-        <div className="flex flex-col gap-3">
+        // Scrollable container for course cards
+        <div className="flex flex-col gap-3 max-h-[500px] overflow-y-auto">
           {courses.map((course, index) => (
             <CourseCard key={index} course={course} />
           ))}

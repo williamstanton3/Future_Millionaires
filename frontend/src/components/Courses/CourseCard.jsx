@@ -1,4 +1,3 @@
-// src/components/Courses/CourseCard.jsx
 import React from "react";
 import {
   Dialog,
@@ -9,9 +8,9 @@ import {
   DialogDescription,
   DialogClose,
 } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 
-export default function CourseCard({ course }) {
-      console.log(course); // <--- check the actual field names
+export default function CourseCard({ course, onAddCourse }) {
   const formatTime = (timeArr) => {
     if (!Array.isArray(timeArr)) return "";
     const [hour, min] = timeArr;
@@ -40,27 +39,31 @@ export default function CourseCard({ course }) {
             {course.subject} {course.number} {course.section} - {course.name}
           </DialogTitle>
           <DialogDescription>
-            <p className="mt-2 text-sm">Professor: {course.faculty}</p>
-            <p className="text-sm">Semester: {course.semester}</p>
-            <p className="text-sm">Credits: {course.credits}</p>
-            <p className="text-sm">Section: {course.section}</p>
-            <p className="text-sm">Location: {course.location}</p>
-            <p className="text-sm">Open Seats: {course.open_seats}</p>
-            <p className="text-sm">Total Seats: {course.total_seats}</p>
+            <div className="mt-2 text-sm">Professor: {course.faculty}</div>
+            <div className="text-sm">Semester: {course.semester}</div>
+            <div className="text-sm">Credits: {course.credits}</div>
+            <div className="text-sm">Section: {course.section}</div>
+            <div className="text-sm">Location: {course.location}</div>
+            <div className="text-sm">Open Seats: {course.open_seats}</div>
+            <div className="text-sm">Total Seats: {course.total_seats}</div>
 
-            <p className="text-sm mt-2 font-semibold">Meetings:</p>
+            <div className="mt-2 text-sm font-semibold">Meetings:</div>
             {course.times.map((m, index) => (
-              <p key={index}>
+              <div key={index}>
                 {m.day} {formatTime(m.start_time)} - {formatTime(m.end_time)}
-              </p>
+              </div>
             ))}
 
-            {course.description && <p className="mt-2 text-sm">{course.description}</p>}
+            {course.description && <div className="mt-2 text-sm">{course.description}</div>}
           </DialogDescription>
         </DialogHeader>
-        <DialogClose className="mt-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
-          Close
-        </DialogClose>
+
+        <div className="mt-4 flex justify-between">
+          <Button onClick={() => onAddCourse(course)}>Add to Schedule</Button>
+          <DialogClose className="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700">
+            Close
+          </DialogClose>
+        </div>
       </DialogContent>
     </Dialog>
   );

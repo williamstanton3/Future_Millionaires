@@ -12,7 +12,7 @@ export default function App() {
     credits: [],
   });
   const [courses, setCourses] = useState([]);
-  const [schedule, setSchedule] = useState([]); // your weekly schedule courses
+  const [schedule, setSchedule] = useState([]);
 
   useEffect(() => {
     fetchMeta().then((data) => setMeta(data));
@@ -39,19 +39,45 @@ export default function App() {
     return "";
   };
 
-  // Handler to add a course to the schedule
+  const toMinutes = (timeStr) => {
+    const [h, m] = timeStr.split(":").map(Number);
+    return h * 60 + m;
+  };
+
+  const hasConflict = (newTimes) => {
+    for (const newSlot of newTimes) {
+      const newStart = toMinutes(newSlot.start);
+      const newEnd = toMinutes(newSlot.end);
+      for (const scheduled of schedule) {
+        for (const slot of scheduled.times) {
+          if (slot.day !== newSlot.day) continue;
+          const start = toMinutes(slot.start);
+          const end = toMinutes(slot.end);
+          if (newStart < end && newEnd > start) return true;
+        }
+      }
+    }
+    return false;
+  };
+
   const handleAddCourse = (course) => {
+    const normalizedTimes = Array.isArray(course.times)
+      ? course.times.map((t) => ({
+          ...t,
+          day: DAY_MAP[t.day] ?? t.day,
+          start: normalizeTime(t.start ?? t.start_time),
+          end: normalizeTime(t.end ?? t.end_time),
+        }))
+      : [];
+
+    if (hasConflict(normalizedTimes)) {
+      throw new Error("Time conflict with an existing course.");
+    }
+
     const normalized = {
       ...course,
       color: COLORS[schedule.length % COLORS.length],
-      times: Array.isArray(course.times)
-        ? course.times.map((t) => ({
-            ...t,
-            day: DAY_MAP[t.day] ?? t.day,
-            start: normalizeTime(t.start ?? t.start_time),
-            end: normalizeTime(t.end ?? t.end_time),
-          }))
-        : [],
+      times: normalizedTimes,
     };
     setSchedule((prev) => [...prev, normalized]);
   };
@@ -66,7 +92,7 @@ export default function App() {
         onFilter={handleFilter}
       />
       <CourseList courses={courses} onAddCourse={handleAddCourse} />
-      <WeeklySchedule courses={schedule} /> {/* show added courses */}
+      <WeeklySchedule courses={schedule} />
     </div>
   );
 }

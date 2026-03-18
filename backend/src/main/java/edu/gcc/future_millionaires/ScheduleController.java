@@ -67,7 +67,8 @@ public class ScheduleController {
                     .filter(c ->
                             c.getSubject().equals(subject) &&
                                     c.getNumber() == number &&
-                                    c.getSection().equals(section))
+                                    c.getSection().equals(section) &&
+                                    c.getSemester().equals(student.getActiveSemester()))
                     .findFirst()
                     .orElse(null);
 
@@ -76,12 +77,22 @@ public class ScheduleController {
                 return;
             }
 
+            System.out.println("Active semester:  [" + student.getActiveSemester() + "]");
+            System.out.println("Course semester:  [" + toAdd.getSemester() + "]");
+            System.out.println("Match: " + toAdd.getSemester().equals(student.getActiveSemester()));
+
             boolean success = schedule.addCourse(toAdd);
             ctx.status(success ? 200 : 409).json(Map.of(
                     "success", success,
                     "message", schedule.getUserMessage(),
                     "credits", schedule.getCredits()
             ));
+        });
+
+        // GET /schedule/all
+        // Returns all saved schedules keyed by semester.
+        app.get("/schedule/all", ctx -> {
+            ctx.json(student.getSchedules());
         });
 
         // DELETE /schedule/remove?subject=COMP&number=422&section=A

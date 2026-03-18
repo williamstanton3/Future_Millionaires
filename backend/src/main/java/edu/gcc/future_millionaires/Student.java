@@ -33,6 +33,9 @@ public class Student {
         return schedules.get(activeSemester);
     }
 
+    public Map<String, Schedule> getSchedules() {
+        return schedules;
+    }
     // Add a course to the transcript
     public void addCourse(String courseID) {
 

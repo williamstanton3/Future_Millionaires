@@ -37,3 +37,8 @@ export async function finalizeSchedule() {
   const res = await fetch(`${BASE}/schedule/finalize`, { method: "POST" });
   return res.json();
 }
+
+export async function clearSchedule() {
+  const res = await fetch(`${BASE}/schedule/clear`, { method: "DELETE" });
+  return res.json();
+}

@@ -146,5 +146,18 @@ public class ScheduleController {
         app.get("/schedule/all", ctx -> {
             ctx.json(student.getSavedSchedules());
         });
+
+        // DELETE /schedule/clear
+        // Clears all courses from the active live schedule.
+        app.delete("/schedule/clear", ctx -> {
+            Schedule schedule = student.getActiveSchedule();
+            if (schedule == null) {
+                ctx.status(400).json(Map.of("message", "No active semester set."));
+                return;
+            }
+            schedule.clearSchedule();
+            persistence.save(student);
+            ctx.json(Map.of("success", true, "message", "Schedule cleared."));
+        });
     }
 }

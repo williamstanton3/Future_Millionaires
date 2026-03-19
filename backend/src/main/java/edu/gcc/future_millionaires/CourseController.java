@@ -77,8 +77,8 @@ public class CourseController {
                     .sorted()
                     .map(s -> {
                         // convert "2023_Fall" -> { value: "2023_Fall", label: "Fall 2023" }
-                        String[] parts = s.split("_");
-                        String label = parts.length == 2 ? parts[1] + " " + parts[0] : s;
+                        String[] parts = s.split("_", 2);
+                        String label = parts.length == 2 ? parts[1].replace("_", " ") + " " + parts[0] : s;
                         Map<String, String> entry = new HashMap<>();
                         entry.put("value", s);
                         entry.put("label", label);

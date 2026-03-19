@@ -19,7 +19,7 @@ const TIME_OPTIONS = [
   "19:00", "19:30", "20:00", "20:30", "21:00"
 ];
 
-export default function FilterSection({ semesters = [], departments = [], maxCourseNumber = 499, creditOptions = [], activeSemester, onSemesterChange, onFilter }) {
+export default function FilterSection({ semesters = [], departments = [], professors = [], numbers = [], creditOptions = [], activeSemester, onSemesterChange, onFilter }) {
   const [keyword, setKeyword] = useState("");
   const [department, setDepartment] = useState("");
   const [departmentText, setDepartmentText] = useState("");
@@ -84,7 +84,7 @@ export default function FilterSection({ semesters = [], departments = [], maxCou
             placeholder="Keyword"
             value={keyword}
             onChange={e => setKeyword(e.target.value)}
-            className="bg-gray-800 text-white placeholder-gray-400 w-full"
+            className="bg-gray-800 text-white placeholder-gray-400 w-96"
           />
 
           <div className="flex gap-2 flex-wrap">
@@ -112,7 +112,7 @@ export default function FilterSection({ semesters = [], departments = [], maxCou
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All</SelectItem>
-                {Array.from({ length: maxCourseNumber - 99 }, (_, i) => 100 + i).map(n => (
+                {numbers.map(n => (
                   <SelectItem key={n} value={n}>{n}</SelectItem>
                 ))}
               </SelectContent>
@@ -125,12 +125,15 @@ export default function FilterSection({ semesters = [], departments = [], maxCou
             />
           </div>
 
-          <Input
-            placeholder="Professor"
-            value={professor}
-            onChange={e => setProfessor(e.target.value)}
-            className="w-48"
-          />
+          <Select value={professor} onValueChange={(val) => setProfessor(val === "all" ? "" : val)}>
+            <SelectTrigger className="w-48">
+              <SelectValue placeholder="Professor" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Any</SelectItem>
+              {professors.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
+            </SelectContent>
+          </Select>
 
           <div className="flex flex-col gap-2">
             <div className="flex gap-2 flex-wrap">

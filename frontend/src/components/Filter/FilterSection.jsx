@@ -3,7 +3,13 @@ import { Input } from "../ui/input";
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "../ui/select";
 import { Button } from "../ui/button";
 
-const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri"];
+const DAYS = [
+  { value: "M", label: "Mon" },
+  { value: "T", label: "Tue" },
+  { value: "W", label: "Wed" },
+  { value: "R", label: "Thu" },
+  { value: "F", label: "Fri" },
+];
 
 export default function FilterSection({ semesters = [], departments = [], maxCourseNumber = 499, creditOptions = [], activeSemester, onSemesterChange, onFilter }) {
   const [keyword, setKeyword] = useState("");
@@ -112,9 +118,9 @@ export default function FilterSection({ semesters = [], departments = [], maxCou
           <div className="flex gap-4 flex-wrap items-center">
             <div className="flex gap-2 flex-wrap">
               {DAYS.map(d => (
-                <label key={d} className="flex items-center gap-1 text-white">
-                  <input type="checkbox" checked={selectedDays.includes(d)} onChange={() => toggleDay(d)} />
-                  {d}
+                <label key={d.value} className="flex items-center gap-1 text-white">
+                  <input type="checkbox" checked={selectedDays.includes(d.value)} onChange={() => toggleDay(d.value)} />
+                  {d.label}
                 </label>
               ))}
             </div>

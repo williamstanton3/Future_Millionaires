@@ -161,11 +161,12 @@ export default function FilterSection({ semesters = [], departments = [], maxCou
             </div>
           </div>
 
-          <Select onValueChange={setCredits}>
+          <Select value={credits} onValueChange={(val) => setCredits(val === "all" ? "" : val)}>
             <SelectTrigger className="w-24">
               <SelectValue placeholder="Credits" />
             </SelectTrigger>
             <SelectContent>
+              <SelectItem value="all">Any</SelectItem>
               {creditOptions.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
             </SelectContent>
           </Select>

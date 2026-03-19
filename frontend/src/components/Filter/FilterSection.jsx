@@ -88,7 +88,7 @@ export default function FilterSection({ semesters = [], departments = [], profes
           />
 
           <div className="flex gap-2 flex-wrap">
-            <Select value={department} onValueChange={(val) => setDepartment(val === "all" ? "" : val)}>
+            <Select value={department} onValueChange={(val) => {setDepartment(val === "all" ? "" : val); setDepartmentText("");} }>
               <SelectTrigger className="w-48">
                 <SelectValue placeholder="Department" />
               </SelectTrigger>
@@ -100,13 +100,13 @@ export default function FilterSection({ semesters = [], departments = [], profes
             <Input
               placeholder="Or type department"
               value={departmentText}
-              onChange={e => setDepartmentText(e.target.value)}
+              onChange={e => {setDepartmentText(e.target.value); setDepartment("");} }
               className="w-48"
             />
           </div>
 
           <div className="flex gap-2 flex-wrap">
-            <Select value={courseNumber} onValueChange={(val) => setCourseNumber(val === "all" ? "" : val)}>
+            <Select value={courseNumber} onValueChange={ (val) => {setCourseNumber(val === "all" ? "" : val); setCourseNumberText("");} }>
               <SelectTrigger className="w-32">
                 <SelectValue placeholder="Course #" />
               </SelectTrigger>
@@ -120,7 +120,7 @@ export default function FilterSection({ semesters = [], departments = [], profes
             <Input
               placeholder="Or type course #"
               value={courseNumberText}
-              onChange={e => setCourseNumberText(e.target.value)}
+              onChange={e => {setCourseNumberText(e.target.value); setCourseNumber("");} }
               className="w-32"
             />
           </div>

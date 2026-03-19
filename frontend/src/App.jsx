@@ -2,7 +2,14 @@ import React, { useState, useEffect } from "react";
 import WeeklySchedule from "./components/Schedule/WeeklySchedule";
 import FilterSection from "./components/Filter/FilterSection";
 import { fetchMeta, fetchCourses } from "./api/CourseApi";
-import { setSemester, addCourseToBackend, getAllSchedules } from "./api/ScheduleApi";
+import {
+  setSemester,
+  addCourseToBackend,
+  removeCourseFromBackend,
+  finalizeSchedule,
+  getAllSchedules,
+  getActiveSchedule,
+} from "./api/ScheduleApi";
 import CourseList from "./components/Courses/CourseList";
 import SavedSchedules from "./components/Schedule/SavedSchedules";
 import { Button } from "./components/ui/button";
@@ -22,8 +29,7 @@ export default function App() {
   const [saveStatus, setSaveStatus] = useState(null);
   const [savedSchedules, setSavedSchedules] = useState({});
 
-  // Confirm dialog state for loading a saved schedule
-  const [pendingLoad, setPendingLoad] = useState(null); // { semester, courses }
+  const [pendingLoad, setPendingLoad] = useState(null);
 
   const DAY_MAP = { M: "Mon", T: "Tue", W: "Wed", R: "Thu", F: "Fri" };
   const COLORS = ["#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6", "#ec4899"];
@@ -33,10 +39,44 @@ export default function App() {
     getAllSchedules().then(setSavedSchedules).catch(() => {});
   }, []);
 
-  const handleSemesterChange = (semester) => {
+  const normalizeTime = (timeValue) => {
+    if (Array.isArray(timeValue) && timeValue.length >= 2) {
+      const [hour, minute] = timeValue;
+      return `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`;
+    }
+    if (typeof timeValue === "string") return timeValue;
+    return "";
+  };
+
+  const normalizeCourseList = (rawCourses) =>
+    (rawCourses ?? []).map((course, i) => ({
+      ...course,
+      color: COLORS[i % COLORS.length],
+      times: Array.isArray(course.times)
+        ? course.times.map((t) => ({
+            ...t,
+            day: DAY_MAP[t.day] ?? t.day,
+            start: normalizeTime(t.start ?? t.start_time),
+            end: normalizeTime(t.end ?? t.end_time),
+          }))
+        : [],
+    }));
+
+  // Tell the backend which semester is active, then restore whatever live schedule is there.
+  const handleSemesterChange = async (semester) => {
     setActiveSemester(semester);
     setCourses([]);
     setSchedule([]);
+
+    try {
+      await setSemester(semester);
+      const data = await getActiveSchedule();
+      if (data?.courses?.length > 0) {
+        setSchedule(normalizeCourseList(data.courses));
+      }
+    } catch (err) {
+      console.error("Failed to load semester schedule:", err);
+    }
   };
 
   const handleFilter = async (filters) => {
@@ -46,15 +86,6 @@ export default function App() {
     } catch (err) {
       console.error("Failed to fetch courses:", err);
     }
-  };
-
-  const normalizeTime = (timeValue) => {
-    if (Array.isArray(timeValue) && timeValue.length >= 2) {
-      const [hour, minute] = timeValue;
-      return `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`;
-    }
-    if (typeof timeValue === "string") return timeValue;
-    return "";
   };
 
   const toMinutes = (timeStr) => {
@@ -78,7 +109,8 @@ export default function App() {
     return false;
   };
 
-  const handleAddCourse = (course) => {
+  // Adds to frontend state and immediately syncs to the backend live schedule.
+  const handleAddCourse = async (course) => {
     const normalizedTimes = Array.isArray(course.times)
       ? course.times.map((t) => ({
           ...t,
@@ -92,6 +124,11 @@ export default function App() {
       throw new Error("Time conflict with an existing course.");
     }
 
+    const result = await addCourseToBackend(course);
+    if (result.success === false) {
+      throw new Error(result.message || "Failed to add course.");
+    }
+
     setSchedule((prev) => [
       ...prev,
       {
@@ -102,7 +139,9 @@ export default function App() {
     ]);
   };
 
-  const handleRemoveCourse = (course) => {
+  // Removes from frontend state and immediately syncs to the backend live schedule.
+  const handleRemoveCourse = async (course) => {
+    await removeCourseFromBackend(course);
     setSchedule((prev) =>
       prev.filter(
         (c) =>
@@ -113,55 +152,40 @@ export default function App() {
     );
   };
 
+  // Finalizes the active schedule on the backend (archives it, clears the live slot),
+  // then resets the frontend to a blank state.
   const handleSaveSchedule = async () => {
     if (schedule.length === 0 || !activeSemester) return;
     setSaveStatus("saving");
     try {
-      await setSemester(activeSemester);
-      const results = await Promise.all(
-        schedule.map((course) => addCourseToBackend(course))
-      );
-      const anyFailed = results.some((r) => !r.success);
-      setSaveStatus(anyFailed ? "error" : "success");
-      if (!anyFailed) {
-        getAllSchedules().then(setSavedSchedules).catch(() => {});
-        setSchedule([]);
-        setCourses([]);
-        setActiveSemester("");
+      const result = await finalizeSchedule();
+      if (!result.success) {
+        setSaveStatus("error");
+        return;
       }
+      setSaveStatus("success");
+      getAllSchedules().then(setSavedSchedules).catch(() => {});
+      setSchedule([]);
+      setCourses([]);
+      setActiveSemester("");
     } catch (err) {
-      console.error("Failed to save schedule:", err);
+      console.error("Failed to finalize schedule:", err);
       setSaveStatus("error");
     } finally {
       setTimeout(() => setSaveStatus(null), 3000);
     }
   };
 
-  // User clicks Load on a saved schedule
   const handleRequestLoad = (semester, courses) => {
     setPendingLoad({ semester, courses });
   };
 
-  // User confirms the load
   const handleConfirmLoad = () => {
     const { semester, courses } = pendingLoad;
     setPendingLoad(null);
     setActiveSemester(semester);
-
-    const normalized = (courses.schedule ?? []).map((course, i) => ({  // <-- change courses to courses.schedule
-      ...course,
-      color: COLORS[i % COLORS.length],
-      times: Array.isArray(course.times)
-        ? course.times.map((t) => ({
-            ...t,
-            day: DAY_MAP[t.day] ?? t.day,
-            start: normalizeTime(t.start ?? t.start_time),
-            end: normalizeTime(t.end ?? t.end_time),
-          }))
-        : [],
-    }));
-    setSchedule(normalized);
     setCourses([]);
+    setSchedule(normalizeCourseList(courses.schedule ?? []));
   };
 
   return (
@@ -198,7 +222,6 @@ export default function App() {
 
       <SavedSchedules schedules={savedSchedules} onLoad={handleRequestLoad} />
 
-      {/* Confirm load dialog */}
       <Dialog open={!!pendingLoad} onOpenChange={(open) => !open && setPendingLoad(null)}>
         <DialogContent className="max-w-sm">
           <DialogHeader>

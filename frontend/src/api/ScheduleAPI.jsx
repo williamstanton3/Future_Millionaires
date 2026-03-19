@@ -32,3 +32,8 @@ export async function getAllSchedules() {
   const res = await fetch(`${BASE}/schedule/all`);
   return res.json();
 }
+
+export async function finalizeSchedule() {
+  const res = await fetch(`${BASE}/schedule/finalize`, { method: "POST" });
+  return res.json();
+}

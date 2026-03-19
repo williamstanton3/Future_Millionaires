@@ -11,12 +11,19 @@ public class Schedule {
     private int credits;
     private String userMessage;
 
+    // Required by Jackson for deserialization
+    public Schedule() {
+        this.schedule = new ArrayList<>();
+        this.credits = 0;
+        this.userMessage = "";
+    }
+
     public Schedule(int studentID, String semester) {
         this.studentID = studentID;
         this.semester = semester;
         this.schedule = new ArrayList<>();
         this.credits = 0;
-        userMessage = "";
+        this.userMessage = "";
     }
 
     public boolean addCourse(Course newCourse) {
@@ -31,7 +38,9 @@ public class Schedule {
         }
 
         for (Course course : schedule) {
-            if (course.getSubject().equals(newCourse.getSubject()) && course.getNumber() == newCourse.getNumber() && course.getSection().equals(newCourse.getSection())) {
+            if (course.getSubject().equals(newCourse.getSubject())
+                    && course.getNumber() == newCourse.getNumber()
+                    && course.getSection().equals(newCourse.getSection())) {
                 userMessage = "This course has already been added.";
                 return false;
             }
@@ -42,13 +51,11 @@ public class Schedule {
                 for (TimeSlot newTime : newCourse.getTimes()) {
                     if (existingTime.getDay().equals(newTime.getDay())) {
                         LocalTime start1 = existingTime.getStart_time();
-                        LocalTime end1 = existingTime.getEnd_time();
+                        LocalTime end1   = existingTime.getEnd_time();
                         LocalTime start2 = newTime.getStart_time();
-                        LocalTime end2 = newTime.getEnd_time();
+                        LocalTime end2   = newTime.getEnd_time();
 
-                        boolean overlap = start1.isBefore(end2) && start2.isBefore(end1);
-
-                        if (overlap) {
+                        if (start1.isBefore(end2) && start2.isBefore(end1)) {
                             userMessage = "Adding this course causes schedule overlap. Remove the conflicting course to add this one.";
                             return false;
                         }
@@ -66,32 +73,35 @@ public class Schedule {
     public boolean removeCourse(String subject, int number, String section) {
         for (int i = 0; i < schedule.size(); i++) {
             Course course = schedule.get(i);
-
-            if (course.getSubject().equals(subject) && course.getNumber() == number && course.getSection().equals(section)) {
+            if (course.getSubject().equals(subject)
+                    && course.getNumber() == number
+                    && course.getSection().equals(section)) {
                 credits -= course.getCredits();
                 schedule.remove(i);
                 userMessage = "Course has been successfully removed!";
                 return true;
             }
         }
-        userMessage = "Cannot remove a course that does not exits in schedule.";
+        userMessage = "Cannot remove a course that does not exist in schedule.";
         return false;
     }
 
-    public String getUserMessage(){
-        return userMessage;
-    }
+    public String getUserMessage() { return userMessage; }
 
-    public int getCredits() {
-        return credits;
-    }
+    public int getCredits() { return credits; }
+    public void setCredits(int credits) { this.credits = credits; }
 
     public void clearSchedule() {
         schedule.clear();
         credits = 0;
     }
 
-    public List<Course> getSchedule() {
-        return schedule;
-    }
+    public List<Course> getSchedule() { return schedule; }
+    public void setSchedule(List<Course> schedule) { this.schedule = schedule; }
+
+    public int getStudentID() { return studentID; }
+    public void setStudentID(int studentID) { this.studentID = studentID; }
+
+    public String getSemester() { return semester; }
+    public void setSemester(String semester) { this.semester = semester; }
 }

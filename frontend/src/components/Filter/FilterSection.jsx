@@ -73,11 +73,12 @@ export default function FilterSection({ semesters = [], departments = [], maxCou
           />
 
           <div className="flex gap-2 flex-wrap">
-            <Select onValueChange={setDepartment}>
+            <Select value={department} onValueChange={(val) => setDepartment(val === "all" ? "" : val)}>
               <SelectTrigger className="w-48">
                 <SelectValue placeholder="Department" />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="all">All Departments</SelectItem>
                 {departments.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
               </SelectContent>
             </Select>
@@ -90,11 +91,12 @@ export default function FilterSection({ semesters = [], departments = [], maxCou
           </div>
 
           <div className="flex gap-2 flex-wrap">
-            <Select onValueChange={setCourseNumber}>
+            <Select value={courseNumber} onValueChange={(val) => setCourseNumber(val === "all" ? "" : val)}>
               <SelectTrigger className="w-32">
                 <SelectValue placeholder="Course #" />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="all">All</SelectItem>
                 {Array.from({ length: maxCourseNumber - 99 }, (_, i) => 100 + i).map(n => (
                   <SelectItem key={n} value={n}>{n}</SelectItem>
                 ))}

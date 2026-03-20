@@ -32,9 +32,9 @@ export default function CourseCard({ course, onAddCourse }) {
     return `${term} ${year}`;
   };
 
-  const handleAdd = () => {
+  const handleAdd = async () => {
     try {
-      onAddCourse(course);
+      await onAddCourse(course);
       setAddSuccess(true);
       setErrorMsg("");
     } catch (e) {

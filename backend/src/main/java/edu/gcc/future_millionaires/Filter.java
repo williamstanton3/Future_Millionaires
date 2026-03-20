@@ -130,7 +130,7 @@ public class Filter {
                 }
 
                 // check if day matches JSON day field
-                boolean dayMatches = slot.getDay().equals(day);
+                boolean dayMatches = slot.getDay().contains(day);
 
                 // if start is null, user only filtered by day
                 boolean startMatches =

@@ -354,7 +354,6 @@ class FilterTest {
         f.setDepartment("COMP");
 
         List<Course> results = f.apply(allCourses);
-
         assertEquals(2, results.size());
     }
 

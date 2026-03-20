@@ -1,7 +1,7 @@
 import React from "react";
 import { Button } from "../ui/button";
 
-export default function SavedSchedules({ schedules, onLoad }) {
+export default function SavedSchedules({ schedules, onLoad, onDelete }) {
   const entries = Object.entries(schedules);
 
   if (entries.length === 0) return null;
@@ -18,12 +18,20 @@ export default function SavedSchedules({ schedules, onLoad }) {
                 {schedule.schedule?.length ?? 0} course(s) · {schedule.credits} credits
               </div>
             </div>
-            <Button
-              className="bg-blue-600 hover:bg-blue-700 text-white text-sm"
-              onClick={() => onLoad(semester, schedule)}
-            >
-              Load
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                className="bg-blue-600 hover:bg-blue-700 text-white text-sm"
+                onClick={() => onLoad(semester, schedule)}
+              >
+                Load
+              </Button>
+              <Button
+                className="bg-red-600 hover:bg-red-700 text-white text-sm"
+                onClick={() => onDelete(semester)}
+              >
+                Delete
+              </Button>
+            </div>
           </div>
         ))}
       </div>

@@ -159,5 +159,21 @@ public class ScheduleController {
             persistence.save(student);
             ctx.json(Map.of("success", true, "message", "Schedule cleared."));
         });
+
+        // DELETE /schedule/saved?semester=2024_Fall
+        // Removes a finalized schedule from savedSchedules.
+        app.delete("/schedule/saved", ctx -> {
+            String semester = ctx.queryParam("semester");
+            if (semester == null) {
+                ctx.status(400).json(Map.of("message", "Missing required query param: semester"));
+                return;
+            }
+            boolean removed = student.getSavedSchedules().remove(semester) != null;
+            if (removed) persistence.save(student);
+            ctx.status(removed ? 200 : 404).json(Map.of(
+                    "success", removed,
+                    "message", removed ? "Schedule deleted." : "No saved schedule found for " + semester
+            ));
+        });
     }
 }

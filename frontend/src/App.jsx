@@ -10,6 +10,7 @@ import {
   getAllSchedules,
   getActiveSchedule,
   clearSchedule,
+  deleteSavedSchedule
 } from "./api/ScheduleApi";
 import CourseList from "./components/Courses/CourseList";
 import SavedSchedules from "./components/Schedule/SavedSchedules";
@@ -199,6 +200,15 @@ export default function App() {
       }
   };
 
+  const handleDeleteSaved = async (semester) => {
+      await deleteSavedSchedule(semester);
+      setSavedSchedules((prev) => {
+          const next = { ...prev };
+          delete next[semester];
+          return next;
+      });
+  };
+
   return (
     <div className="min-h-screen bg-gray-900 p-4 flex flex-col gap-6">
       <FilterSection
@@ -231,7 +241,7 @@ export default function App() {
 
       <WeeklySchedule courses={schedule} onRemoveCourse={handleRemoveCourse} />
 
-      <SavedSchedules schedules={savedSchedules} onLoad={handleRequestLoad} />
+      <SavedSchedules schedules={savedSchedules} onLoad={handleRequestLoad} onDelete={handleDeleteSaved} />
 
       <Dialog open={!!pendingLoad} onOpenChange={(open) => !open && setPendingLoad(null)}>
         <DialogContent className="max-w-sm">

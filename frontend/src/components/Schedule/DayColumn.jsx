@@ -2,6 +2,14 @@
 import React from "react";
 import "./Schedule.css";
 
+const formatTime = (timeStr) => {
+  if (!timeStr) return "";
+  const [hour, min] = timeStr.split(":").map(Number);
+  const h = hour % 12 === 0 ? 12 : hour % 12;
+  const ampm = hour < 12 ? "AM" : "PM";
+  return `${h}:${String(min).padStart(2, "0")} ${ampm}`;
+};
+
 export default function DayColumn({ day, courses, onCourseClick }) {
   const dayCourses = courses.filter(course =>
     course.times.some(t => t.day === day)
@@ -40,7 +48,7 @@ export default function DayColumn({ day, courses, onCourseClick }) {
                   onClick={() => onCourseClick(course)}
                 >
                   <div className="class-block-name">{course.name}</div>
-                  <div className="class-block-time">{t.start} - {t.end}</div>
+                  <div className="class-block-time">{formatTime(t.start)} – {formatTime(t.end)}</div>
                 </div>
               );
             })

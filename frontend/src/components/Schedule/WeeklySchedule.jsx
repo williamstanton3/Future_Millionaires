@@ -14,12 +14,30 @@ import { Button } from "@/components/ui/button";
 
 const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri"];
 
-const formatTime = (timeArr) => {
-  if (!Array.isArray(timeArr)) return timeArr ?? "";
-  const [hour, min] = timeArr;
-  const h = hour % 12 === 0 ? 12 : hour % 12;
-  const ampm = hour < 12 ? "AM" : "PM";
-  return `${h}:${String(min).padStart(2, "0")} ${ampm}`;
+const formatTime = (timeValue) => {
+  // Normalized string from frontend state e.g. "09:30"
+  if (typeof timeValue === "string") {
+    const [hour, min] = timeValue.split(":").map(Number);
+    const h = hour % 12 === 0 ? 12 : hour % 12;
+    const ampm = hour < 12 ? "AM" : "PM";
+    return `${h}:${String(min).padStart(2, "0")} ${ampm}`;
+  }
+  // Raw array from backend e.g. [9, 30]
+  if (Array.isArray(timeValue)) {
+    const [hour, min] = timeValue;
+    const h = hour % 12 === 0 ? 12 : hour % 12;
+    const ampm = hour < 12 ? "AM" : "PM";
+    return `${h}:${String(min).padStart(2, "0")} ${ampm}`;
+  }
+  return "";
+};
+
+const formatSemester = (semester) => {
+  if (!semester) return "";
+  const parts = semester.split("_");
+  const year = parts[0];
+  const term = parts.slice(1).join(" ");
+  return `${term} ${year}`;
 };
 
 export default function WeeklySchedule({ courses, onRemoveCourse }) {
@@ -60,7 +78,7 @@ export default function WeeklySchedule({ courses, onRemoveCourse }) {
             </DialogTitle>
             <DialogDescription>
               <div className="mt-2 text-sm">Professor: {selected?.faculty}</div>
-              <div className="text-sm">Semester: {selected?.semester}</div>
+              <div className="text-sm">Semester: {formatSemester(selected?.semester)}</div>
               <div className="text-sm">Credits: {selected?.credits}</div>
               <div className="text-sm">Location: {selected?.location}</div>
               <div className="text-sm">Open Seats: {selected?.open_seats}</div>
@@ -69,7 +87,7 @@ export default function WeeklySchedule({ courses, onRemoveCourse }) {
               <div className="mt-2 text-sm font-semibold">Meetings:</div>
               {selected?.times.map((m, i) => (
                 <div key={i} className="text-sm">
-                  {m.day} {formatTime(m.start_time)} – {formatTime(m.end_time)}
+                  {m.day} {formatTime(m.start)} – {formatTime(m.end)}
                 </div>
               ))}
 

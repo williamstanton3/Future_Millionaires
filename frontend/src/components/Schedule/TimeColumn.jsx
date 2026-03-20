@@ -2,7 +2,7 @@ import React from "react";
 
 export default function TimeColumn() {
   const hours = [];
-  for (let h = 8; h <= 20; h++) {
+  for (let h = 8; h <= 21; h++) {
     const ampm = h < 12 ? "AM" : "PM";
     const displayHour = h > 12 ? h - 12 : h;
     hours.push(`${displayHour}:00 ${ampm}`);

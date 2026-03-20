@@ -134,11 +134,11 @@ public class Filter {
 
                 // if start is null, user only filtered by day
                 boolean startMatches =
-                        (start == null) || slot.getStart_time().equals(start);
+                        (start == null) || slot.getStart_time().isAfter(start);
 
                 // if end is null, user only filtered by day
                 boolean endMatches =
-                        (end == null) || slot.getEnd_time().equals(end);
+                        (end == null) || slot.getEnd_time().isBefore(end);
 
                 // if all required conditions match
                 if (dayMatches && startMatches && endMatches) {

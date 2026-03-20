@@ -32,3 +32,20 @@ export async function getAllSchedules() {
   const res = await fetch(`${BASE}/schedule/all`);
   return res.json();
 }
+
+export async function finalizeSchedule() {
+  const res = await fetch(`${BASE}/schedule/finalize`, { method: "POST" });
+  return res.json();
+}
+
+export async function clearSchedule() {
+  const res = await fetch(`${BASE}/schedule/clear`, { method: "DELETE" });
+  return res.json();
+}
+
+export async function deleteSavedSchedule(semester) {
+  const res = await fetch(`${BASE}/schedule/saved?semester=${encodeURIComponent(semester)}`, {
+    method: "DELETE",
+  });
+  return res.json();
+}

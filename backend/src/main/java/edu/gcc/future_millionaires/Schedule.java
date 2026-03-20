@@ -65,7 +65,7 @@ public class Schedule {
         }
 
         for (Course existing : schedule) {
-            if(existing.getNumber() == newCourse.getNumber()){
+            if (existing.getSubject().equals(newCourse.getSubject()) && existing.getNumber() == newCourse.getNumber()) {
                 userMessage = "Alternate section of this course is already added";
                 return false;
             }

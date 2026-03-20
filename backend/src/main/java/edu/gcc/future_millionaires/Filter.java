@@ -56,7 +56,7 @@ public class Filter {
 
         // department filter
         if (department != null &&
-                !department.equals(course.getSubject()))
+                !department.equalsIgnoreCase(course.getSubject()))
             return false;
 
         // professors filter (matches if any professor appears in the JSON faculty list)

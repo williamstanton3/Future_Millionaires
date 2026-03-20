@@ -93,6 +93,13 @@ public class CourseController {
                     .boxed()
                     .collect(Collectors.toList()));
 
+            meta.put("professors", courses.stream()
+                    .flatMap(c -> c.getFaculty().stream())
+                    .filter(p -> p != null && !p.trim().isEmpty())
+                    .distinct()
+                    .sorted()
+                    .collect(Collectors.toList()));
+
             ctx.json(meta);
         });
     }

@@ -11,7 +11,15 @@ const DAYS = [
   { value: "F", label: "Fri" },
 ];
 
-export default function FilterSection({ semesters = [], departments = [], maxCourseNumber = 499, creditOptions = [], activeSemester, onSemesterChange, onFilter }) {
+const TIME_OPTIONS = [
+  "08:00", "08:30", "09:00", "09:30",
+  "10:00", "10:30", "11:00", "11:30", "12:00", "12:30",
+  "13:00", "13:30", "14:00", "14:30", "15:00", "15:30",
+  "16:00", "16:30", "17:00", "17:30", "18:00", "18:30",
+  "19:00", "19:30", "20:00", "20:30", "21:00"
+];
+
+export default function FilterSection({ semesters = [], departments = [], professors = [], numbers = [], creditOptions = [], activeSemester, onSemesterChange, onFilter }) {
   const [keyword, setKeyword] = useState("");
   const [department, setDepartment] = useState("");
   const [departmentText, setDepartmentText] = useState("");
@@ -43,6 +51,13 @@ export default function FilterSection({ semesters = [], departments = [], maxCou
     });
   };
 
+  const formatTimeLabel = (time) => {
+    const [hour, min] = time.split(":").map(Number);
+    const h = hour % 12 === 0 ? 12 : hour % 12;
+    const ampm = hour < 12 ? "AM" : "PM";
+    return `${h}:${String(min).padStart(2, "0")} ${ampm}`;
+  };
+
   return (
     <div className="flex flex-col gap-4 p-4 bg-gray-900 rounded-md shadow-md">
 
@@ -69,33 +84,35 @@ export default function FilterSection({ semesters = [], departments = [], maxCou
             placeholder="Keyword"
             value={keyword}
             onChange={e => setKeyword(e.target.value)}
-            className="bg-gray-800 text-white placeholder-gray-400 w-full"
+            className="bg-gray-800 text-white placeholder-gray-400 w-96"
           />
 
           <div className="flex gap-2 flex-wrap">
-            <Select onValueChange={setDepartment}>
+            <Select value={department} onValueChange={(val) => {setDepartment(val === "all" ? "" : val); setDepartmentText("");} }>
               <SelectTrigger className="w-48">
                 <SelectValue placeholder="Department" />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="all">All Departments</SelectItem>
                 {departments.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
               </SelectContent>
             </Select>
             <Input
               placeholder="Or type department"
               value={departmentText}
-              onChange={e => setDepartmentText(e.target.value)}
+              onChange={e => {setDepartmentText(e.target.value); setDepartment("");} }
               className="w-48"
             />
           </div>
 
           <div className="flex gap-2 flex-wrap">
-            <Select onValueChange={setCourseNumber}>
+            <Select value={courseNumber} onValueChange={ (val) => {setCourseNumber(val === "all" ? "" : val); setCourseNumberText("");} }>
               <SelectTrigger className="w-32">
                 <SelectValue placeholder="Course #" />
               </SelectTrigger>
               <SelectContent>
-                {Array.from({ length: maxCourseNumber - 99 }, (_, i) => 100 + i).map(n => (
+                <SelectItem value="all">All</SelectItem>
+                {numbers.map(n => (
                   <SelectItem key={n} value={n}>{n}</SelectItem>
                 ))}
               </SelectContent>
@@ -103,19 +120,22 @@ export default function FilterSection({ semesters = [], departments = [], maxCou
             <Input
               placeholder="Or type course #"
               value={courseNumberText}
-              onChange={e => setCourseNumberText(e.target.value)}
+              onChange={e => {setCourseNumberText(e.target.value); setCourseNumber("");} }
               className="w-32"
             />
           </div>
 
-          <Input
-            placeholder="Professor"
-            value={professor}
-            onChange={e => setProfessor(e.target.value)}
-            className="w-48"
-          />
+          <Select value={professor} onValueChange={(val) => setProfessor(val === "all" ? "" : val)}>
+            <SelectTrigger className="w-48">
+              <SelectValue placeholder="Professor" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Any</SelectItem>
+              {professors.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
+            </SelectContent>
+          </Select>
 
-          <div className="flex gap-4 flex-wrap items-center">
+          <div className="flex flex-col gap-2">
             <div className="flex gap-2 flex-wrap">
               {DAYS.map(d => (
                 <label key={d.value} className="flex items-center gap-1 text-white">
@@ -124,15 +144,32 @@ export default function FilterSection({ semesters = [], departments = [], maxCou
                 </label>
               ))}
             </div>
-            <Input type="time" value={startTime} onChange={e => setStartTime(e.target.value)} className="w-24" />
-            <Input type="time" value={endTime} onChange={e => setEndTime(e.target.value)} className="w-24" />
+            <div className="flex gap-2 items-center">
+              <span className="text-sm text-gray-400">Time Range:</span>
+              <Select value={startTime} onValueChange={(val) => setStartTime(val === "all" ? "" : val)}>
+                <SelectTrigger className="w-32"><SelectValue placeholder="Start Time" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Any</SelectItem>
+                  {TIME_OPTIONS.map(t => <SelectItem key={t} value={t}>{formatTimeLabel(t)}</SelectItem>)}
+                </SelectContent>
+              </Select>
+              <span className="text-gray-400">-</span>
+              <Select value={endTime} onValueChange={(val) => setEndTime(val === "all" ? "" : val)}>
+                <SelectTrigger className="w-32"><SelectValue placeholder="End Time" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Any</SelectItem>
+                  {TIME_OPTIONS.map(t => <SelectItem key={t} value={t}>{formatTimeLabel(t)}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
-          <Select onValueChange={setCredits}>
+          <Select value={credits} onValueChange={(val) => setCredits(val === "all" ? "" : val)}>
             <SelectTrigger className="w-24">
               <SelectValue placeholder="Credits" />
             </SelectTrigger>
             <SelectContent>
+              <SelectItem value="all">Any</SelectItem>
               {creditOptions.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
             </SelectContent>
           </Select>

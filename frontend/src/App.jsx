@@ -169,7 +169,8 @@ export default function App() {
       <FilterSection
         semesters={meta.semesters}
         departments={meta.departments}
-        maxCourseNumber={Math.max(...(meta.numbers.length ? meta.numbers : [499]), 499)}
+        professors={meta.professors}
+        numbers={meta.numbers}
         creditOptions={meta.credits}
         activeSemester={activeSemester}
         onSemesterChange={handleSemesterChange}

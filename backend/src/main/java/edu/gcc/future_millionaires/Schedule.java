@@ -57,6 +57,13 @@ public class Schedule {
             }
         }
 
+        for (Course existing : schedule) {
+            if(existing.getNumber() == newCourse.getNumber()){
+                userMessage = "Alternate section of this course is already added";
+                return false;
+            }
+        }
+
         schedule.add(newCourse);
         credits += newCourse.getCredits();
         userMessage = "Course has been successfully added!";

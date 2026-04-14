@@ -26,6 +26,14 @@ public class Schedule {
         this.userMessage = "";
     }
 
+    public Schedule(int studentID, String semester, List<Course> schedule){
+        this.studentID = studentID;
+        this.semester = semester;
+        this.schedule = new ArrayList<>(schedule);
+        this.credits = schedule.stream().mapToInt(Course::getCredits).sum();
+        this.userMessage = "";
+    }
+
     public boolean addCourse(Course newCourse) {
         if (newCourse == null) {
             userMessage = "No course was provided.";
@@ -83,49 +91,76 @@ public class Schedule {
     }
     /**
     * @param newCourse is the course trying to be added that conflicts with the current schedule
-    * @param allCourses is the list of the current classes on the schedule
+    * @param allCourses is the all the classes available
     * @return a list of schedule suggestions without conflicts
     */
     public List<Schedule> suggestAlternatives(Course newCourse, List<Course> allCourses) {
-        return null;
+        // create a list of lists where each inner list contains all the sections of all the courses that need to be repicked
+        List<Course> toRePick = new ArrayList<>(schedule);
+        toRePick.add(newCourse);
+
+        List<List<Course>> sectionChoices = new ArrayList<>();
+        for (Course courseToPick : toRePick) {
+            List<Course> sections = new ArrayList<>();
+            for (Course c : allCourses) {
+                if (c.getSubject().equals(courseToPick.getSubject()) &&
+                        c.getNumber() == courseToPick.getNumber() &&
+                        c.getSemester().equals(semester)) {
+                    sections.add(c);
+                }
+            }
+            if (sections.isEmpty()) {
+                return new ArrayList<>();
+            }
+            sectionChoices.add(sections);
+        }
+
+        // Generate every combination (cartesian product) and keep the valid ones
+        List<Schedule> validSchedules = new ArrayList<>();
+        List<Course> current = new ArrayList<>();
+        getCombinations(sectionChoices, 0, current, validSchedules);
+
+        return validSchedules;
     }
 
+    /**
+     * recurses through the list of lists containing all the possible sections and finds all the
+     * schedules that could fix the conflict
+     * @param sectionChoices the list of lists containing type Course with all the course sections
+     * @param depth what level of the sectionsChoices list you currently on
+     * @param current the current schedule
+     * @param results full schedules that have no conflicts
+     */
     private void getCombinations(
         List<List<Course>> sectionChoices,
-        List<Course> fixed,
         int depth,
         List<Course> current,
         List<Schedule> results) {
 
             if (depth == sectionChoices.size()) {
-                List<Course> candidate = new ArrayList<>(fixed);
-                candidate.addAll(current);
-
-                if (isConflictFree(candidate)) {
-                    Schedule suggested = new Schedule(studentID, semester);
-                    suggested.setSchedule(new ArrayList<>(candidate));
-                    suggested.setCredits(candidate.stream().mapToInt(Course::getCredits).sum());
-                    results.add(suggested);
-                }
+                // We found a complete, valid schedule!
+                Schedule suggested = new Schedule(studentID, semester, current);
+                results.add(suggested);
                 return;
             }
 
             for (Course section : sectionChoices.get(depth)) {
-                current.add(section);
-                getCombinations(sectionChoices, fixed, depth + 1, current, results);
-                current.remove(current.size() - 1);
+                // Only go deeper if this section doesn't conflict with what we've picked so far
+                if (isConflictFree(section, current)) {
+                    current.add(section);
+                    getCombinations(sectionChoices, depth + 1, current, results);
+                    current.remove(current.size() - 1); // Standard backtracking undo
+                }
             }
     }
 
-    private boolean isConflictFree(List<Course> courses) {
-        for (int i = 0; i < courses.size(); i++) {
-            for (int j = i + 1; j < courses.size(); j++) {
-                if (timesOverlap(courses.get(i), courses.get(j))) {
-                    return false;
-                }
+    private boolean isConflictFree(Course candidate, List<Course> currentSelection) {
+        for (Course accepted : currentSelection) {
+            if (timesOverlap(candidate, accepted)) {
+                return false; // Found a conflict, don't let them in!
             }
         }
-        return true;
+        return true; // No conflicts with anyone already in the list
     }
 
     private boolean timesOverlap(Course a, Course b) {

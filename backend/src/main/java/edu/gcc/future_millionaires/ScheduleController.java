@@ -2,6 +2,7 @@ package edu.gcc.future_millionaires;
 
 import io.javalin.Javalin;
 
+import java.util.List;
 import java.util.Map;
 
 public class ScheduleController {
@@ -80,13 +81,35 @@ public class ScheduleController {
             }
 
             boolean success = schedule.addCourse(toAdd);
-            if (success) persistence.save(student);
+            if (success) {
+                persistence.save(student);
+                ctx.status(200).json(Map.of(
+                        "success", true,
+                        "message", schedule.getUserMessage(),
+                        "credits", schedule.getCredits()
+                ));
+            } else {
+                // Check whether the failure was a time conflict; if so, suggest alternatives.
+                String msg = schedule.getUserMessage();
+                boolean isTimeConflict = msg != null && schedule.getLatestResult() == Schedule.Result.TIME_CONFLICT;
 
-            ctx.status(success ? 200 : 409).json(Map.of(
-                    "success", success,
-                    "message", schedule.getUserMessage(),
-                    "credits", schedule.getCredits()
-            ));
+                if (isTimeConflict) {
+                    List<Schedule> suggestions =
+                            schedule.suggestAlternatives(toAdd, courseList.getCourses());
+                    ctx.status(409).json(Map.of(
+                            "success", false,
+                            "message", msg,
+                            "credits", schedule.getCredits(),
+                            "suggestedSchedules", suggestions
+                    ));
+                } else {
+                    ctx.status(409).json(Map.of(
+                            "success", false,
+                            "message", msg,
+                            "credits", schedule.getCredits()
+                    ));
+                }
+            }
         });
 
         // DELETE /schedule/remove?subject=COMP&number=422&section=A

@@ -11,6 +11,19 @@ public class Schedule {
     private int credits;
     private String userMessage;
 
+    public Result getLatestResult() {
+        return latestResult;
+    }
+
+    public enum Result {
+        SUCCESS,
+        TIME_CONFLICT,
+        DUPLICATE,
+        INVALID_SEMESTER,
+        NOT_FOUND
+    }
+    private Result latestResult;
+
     // Required by Jackson for deserialization
     public Schedule() {
         this.schedule = new ArrayList<>();
@@ -37,11 +50,13 @@ public class Schedule {
     public boolean addCourse(Course newCourse) {
         if (newCourse == null) {
             userMessage = "No course was provided.";
+            latestResult = Result.NOT_FOUND;
             return false;
         }
 
         if (!newCourse.getSemester().equals(semester)) {
             userMessage = "This course's semester does not match selected semester.";
+            latestResult = Result.INVALID_SEMESTER;
             return false;
         }
 
@@ -50,6 +65,7 @@ public class Schedule {
                     && course.getNumber() == newCourse.getNumber()
                     && course.getSection().equals(newCourse.getSection())) {
                 userMessage = "This course has already been added.";
+                latestResult = Result.DUPLICATE;
                 return false;
             }
         }
@@ -57,6 +73,7 @@ public class Schedule {
         for (Course existing : schedule) {
             if (timesOverlap(existing, newCourse)) {
                 userMessage = "Adding this course causes schedule overlap. Remove the conflicting course to add this one.";
+                latestResult = Result.TIME_CONFLICT;
                 return false;
             }
         }
@@ -64,6 +81,7 @@ public class Schedule {
         for (Course existing : schedule) {
             if (existing.getSubject().equals(newCourse.getSubject()) && existing.getNumber() == newCourse.getNumber()) {
                 userMessage = "Alternate section of this course is already added";
+                latestResult = Result.DUPLICATE;
                 return false;
             }
         }
@@ -71,6 +89,7 @@ public class Schedule {
         schedule.add(newCourse);
         credits += newCourse.getCredits();
         userMessage = "Course has been successfully added!";
+        latestResult = Result.SUCCESS;
         return true;
     }
 

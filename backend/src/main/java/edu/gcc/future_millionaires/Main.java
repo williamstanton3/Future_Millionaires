@@ -21,7 +21,6 @@ public class Main {
         }).start(7070);
 
         new CourseController(app, courseList);
-        new ScheduleController(app, student, courseList);
-        new EmailController(app);
+        new ScheduleController(app, student, courseList, persistence);
     }
 }

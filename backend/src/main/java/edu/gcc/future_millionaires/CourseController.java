@@ -77,8 +77,8 @@ public class CourseController {
                     .sorted()
                     .map(s -> {
                         // convert "2023_Fall" -> { value: "2023_Fall", label: "Fall 2023" }
-                        String[] parts = s.split("_");
-                        String label = parts.length == 2 ? parts[1] + " " + parts[0] : s;
+                        String[] parts = s.split("_", 2);
+                        String label = parts.length == 2 ? parts[1].replace("_", " ") + " " + parts[0] : s;
                         Map<String, String> entry = new HashMap<>();
                         entry.put("value", s);
                         entry.put("label", label);
@@ -91,6 +91,13 @@ public class CourseController {
                     .distinct()
                     .sorted()
                     .boxed()
+                    .collect(Collectors.toList()));
+
+            meta.put("professors", courses.stream()
+                    .flatMap(c -> c.getFaculty().stream())
+                    .filter(p -> p != null && !p.trim().isEmpty())
+                    .distinct()
+                    .sorted()
                     .collect(Collectors.toList()));
 
             ctx.json(meta);

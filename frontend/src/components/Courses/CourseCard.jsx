@@ -24,9 +24,17 @@ export default function CourseCard({ course, onAddCourse }) {
     return `${h}:${String(min).padStart(2, "0")} ${ampm}`;
   };
 
-  const handleAdd = () => {
+  const formatSemester = (semester) => {
+    if (!semester) return "";
+    const parts = semester.split("_");
+    const year = parts[0];
+    const term = parts.slice(1).join(" ");
+    return `${term} ${year}`;
+  };
+
+  const handleAdd = async () => {
     try {
-      onAddCourse(course);
+      await onAddCourse(course);
       setAddSuccess(true);
       setErrorMsg("");
     } catch (e) {
@@ -49,7 +57,7 @@ export default function CourseCard({ course, onAddCourse }) {
             </div>
             <div className="text-sm text-gray-300">{course.name}</div>
             <div className="mt-2 text-sm">Professor: {course.faculty}</div>
-            <div className="text-sm">Semester: {course.semester}</div>
+            <div className="text-sm">Semester: {formatSemester(course.semester)}</div>
             <div className="text-sm">Credits: {course.credits}</div>
           </div>
         </DialogTrigger>
@@ -61,7 +69,7 @@ export default function CourseCard({ course, onAddCourse }) {
             </DialogTitle>
             <DialogDescription>
               <div className="mt-2 text-sm">Professor: {course.faculty}</div>
-              <div className="text-sm">Semester: {course.semester}</div>
+              <div className="text-sm">Semester: {formatSemester(course.semester)}</div>
               <div className="text-sm">Credits: {course.credits}</div>
               <div className="text-sm">Section: {course.section}</div>
               <div className="text-sm">Location: {course.location}</div>

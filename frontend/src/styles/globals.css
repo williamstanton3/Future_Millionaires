@@ -1,17 +1,32 @@
-/* src/index.css or src/styles/globals.css */
 @import "@fontsource-variable/inter";
 
-/* Tailwind base layers */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Shadcn theme tokens */
 :root {
-  --border:  hsl(210 16% 93%);
-  --input:   hsl(0 0% 100%);
-  --ring:    hsl(215 20% 65%);
-  --background: hsl(0 0% 100%);
-  --foreground: hsl(222 47% 11%);
-  /* add more tokens from shadcn preset if needed */
+  --background: 222 47% 11%;
+  --foreground: 210 40% 98%;
+
+  --popover: 222 47% 11%;
+  --popover-foreground: 210 40% 98%;
+
+  --card: 222 47% 11%;
+  --card-foreground: 210 40% 98%;
+
+  --border: 217 33% 20%;
+  --input: 217 33% 20%;
+  --ring: 215 20% 65%;
+
+  --muted: 217 33% 18%;
+  --muted-foreground: 215 20% 65%;
+
+  --accent: 217 33% 18%;
+  --accent-foreground: 210 40% 98%;
+
+  --primary: 210 40% 98%;
+  --primary-foreground: 222 47% 11%;
+
+  --secondary: 217 33% 18%;
+  --secondary-foreground: 210 40% 98%;
 }

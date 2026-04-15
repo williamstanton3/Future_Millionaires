@@ -10,6 +10,13 @@ public class TimeSlot {
 
     public TimeSlot() {}
 
+    // Parameterized constructor (The one your test needs!)
+    public TimeSlot(String day, LocalTime start_time, LocalTime end_time) {
+        this.day = day;
+        this.start_time = start_time;
+        this.end_time = end_time;
+    }
+
     public String getDay() { return day; }
     public void setDay(String day) { this.day = day; }
 

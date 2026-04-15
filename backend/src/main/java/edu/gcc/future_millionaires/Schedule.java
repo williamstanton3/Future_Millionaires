@@ -11,6 +11,19 @@ public class Schedule {
     private int credits;
     private String userMessage;
 
+    public Result getLatestResult() {
+        return latestResult;
+    }
+
+    public enum Result {
+        SUCCESS,
+        TIME_CONFLICT,
+        DUPLICATE,
+        INVALID_SEMESTER,
+        NOT_FOUND
+    }
+    private Result latestResult;
+
     // Required by Jackson for deserialization
     public Schedule() {
         this.schedule = new ArrayList<>();
@@ -26,14 +39,24 @@ public class Schedule {
         this.userMessage = "";
     }
 
+    public Schedule(int studentID, String semester, List<Course> schedule){
+        this.studentID = studentID;
+        this.semester = semester;
+        this.schedule = new ArrayList<>(schedule);
+        this.credits = schedule.stream().mapToInt(Course::getCredits).sum();
+        this.userMessage = "";
+    }
+
     public boolean addCourse(Course newCourse) {
         if (newCourse == null) {
             userMessage = "No course was provided.";
+            latestResult = Result.NOT_FOUND;
             return false;
         }
 
         if (!newCourse.getSemester().equals(semester)) {
             userMessage = "This course's semester does not match selected semester.";
+            latestResult = Result.INVALID_SEMESTER;
             return false;
         }
 
@@ -42,31 +65,23 @@ public class Schedule {
                     && course.getNumber() == newCourse.getNumber()
                     && course.getSection().equals(newCourse.getSection())) {
                 userMessage = "This course has already been added.";
+                latestResult = Result.DUPLICATE;
                 return false;
             }
         }
 
         for (Course existing : schedule) {
-            for (TimeSlot existingTime : existing.getTimes()) {
-                for (TimeSlot newTime : newCourse.getTimes()) {
-                    if (existingTime.getDay().equals(newTime.getDay())) {
-                        LocalTime start1 = existingTime.getStart_time();
-                        LocalTime end1   = existingTime.getEnd_time();
-                        LocalTime start2 = newTime.getStart_time();
-                        LocalTime end2   = newTime.getEnd_time();
-
-                        if (start1.isBefore(end2) && start2.isBefore(end1)) {
-                            userMessage = "Adding this course causes schedule overlap. Remove the conflicting course to add this one.";
-                            return false;
-                        }
-                    }
-                }
+            if (timesOverlap(existing, newCourse)) {
+                userMessage = "Adding this course causes schedule overlap. Remove the conflicting course to add this one.";
+                latestResult = Result.TIME_CONFLICT;
+                return false;
             }
         }
 
         for (Course existing : schedule) {
             if (existing.getSubject().equals(newCourse.getSubject()) && existing.getNumber() == newCourse.getNumber()) {
                 userMessage = "Alternate section of this course is already added";
+                latestResult = Result.DUPLICATE;
                 return false;
             }
         }
@@ -74,6 +89,7 @@ public class Schedule {
         schedule.add(newCourse);
         credits += newCourse.getCredits();
         userMessage = "Course has been successfully added!";
+        latestResult = Result.SUCCESS;
         return true;
     }
 
@@ -92,6 +108,98 @@ public class Schedule {
         userMessage = "Cannot remove a course that does not exist in schedule.";
         return false;
     }
+    /**
+    * @param newCourse is the course trying to be added that conflicts with the current schedule
+    * @param allCourses is the all the classes available
+    * @return a list of schedule suggestions without conflicts
+    */
+    public List<Schedule> suggestAlternatives(Course newCourse, List<Course> allCourses) {
+        // create a list of lists where each inner list contains all the sections of all the courses that need to be repicked
+        List<Course> toRePick = new ArrayList<>(schedule);
+        toRePick.add(newCourse);
+
+        List<List<Course>> sectionChoices = new ArrayList<>();
+        for (Course courseToPick : toRePick) {
+            List<Course> sections = new ArrayList<>();
+            for (Course c : allCourses) {
+                if (c.getSubject().equals(courseToPick.getSubject()) &&
+                        c.getNumber() == courseToPick.getNumber() &&
+                        c.getSemester().equals(semester)) {
+                    sections.add(c);
+                }
+            }
+            if (sections.isEmpty()) {
+                return new ArrayList<>();
+            }
+            sectionChoices.add(sections);
+        }
+
+        // Generate every combination (cartesian product) and keep the valid ones
+        List<Schedule> validSchedules = new ArrayList<>();
+        List<Course> current = new ArrayList<>();
+        getCombinations(sectionChoices, 0, current, validSchedules);
+
+        return validSchedules;
+    }
+
+    /**
+     * recurses through the list of lists containing all the possible sections and finds all the
+     * schedules that could fix the conflict
+     * @param sectionChoices the list of lists containing type Course with all the course sections
+     * @param depth what level of the sectionsChoices list you currently on
+     * @param current the current schedule
+     * @param results full schedules that have no conflicts
+     */
+    private void getCombinations(
+        List<List<Course>> sectionChoices,
+        int depth,
+        List<Course> current,
+        List<Schedule> results) {
+
+            if (depth == sectionChoices.size()) {
+                // We found a complete, valid schedule!
+                Schedule suggested = new Schedule(studentID, semester, current);
+                results.add(suggested);
+                return;
+            }
+
+            for (Course section : sectionChoices.get(depth)) {
+                // Only go deeper if this section doesn't conflict with what we've picked so far
+                if (isConflictFree(section, current)) {
+                    current.add(section);
+                    getCombinations(sectionChoices, depth + 1, current, results);
+                    current.remove(current.size() - 1); // Standard backtracking undo
+                }
+            }
+    }
+
+    private boolean isConflictFree(Course candidate, List<Course> currentSelection) {
+        for (Course accepted : currentSelection) {
+            if (timesOverlap(candidate, accepted)) {
+                return false; // Found a conflict, don't let them in!
+            }
+        }
+        return true; // No conflicts with anyone already in the list
+    }
+
+    private boolean timesOverlap(Course a, Course b) {
+        if (a.getTimes() == null || b.getTimes() == null) return false;
+        for (TimeSlot slotA : a.getTimes()) {
+            for (TimeSlot slotB : b.getTimes()) {
+                if (slotA.getDay().equals(slotB.getDay())) {
+                    LocalTime start1 = slotA.getStart_time();
+                    LocalTime end1   = slotA.getEnd_time();
+                    LocalTime start2 = slotB.getStart_time();
+                    LocalTime end2   = slotB.getEnd_time();
+                    if (start1.isBefore(end2) && start2.isBefore(end1)) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
 
     public String getUserMessage() { return userMessage; }
 

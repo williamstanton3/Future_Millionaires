@@ -1,0 +1,115 @@
+// src/components/Schedule/WeeklySchedule.jsx
+import React, { useState } from "react";
+import TimeColumn from "./TimeColumn";
+import DayColumn from "./DayColumn";
+import "./Schedule.css";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+
+const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri"];
+
+const formatTime = (timeValue) => {
+  // Normalized string from frontend state e.g. "09:30"
+  if (typeof timeValue === "string") {
+    const [hour, min] = timeValue.split(":").map(Number);
+    const h = hour % 12 === 0 ? 12 : hour % 12;
+    const ampm = hour < 12 ? "AM" : "PM";
+    return `${h}:${String(min).padStart(2, "0")} ${ampm}`;
+  }
+  // Raw array from backend e.g. [9, 30]
+  if (Array.isArray(timeValue)) {
+    const [hour, min] = timeValue;
+    const h = hour % 12 === 0 ? 12 : hour % 12;
+    const ampm = hour < 12 ? "AM" : "PM";
+    return `${h}:${String(min).padStart(2, "0")} ${ampm}`;
+  }
+  return "";
+};
+
+const formatSemester = (semester) => {
+  if (!semester) return "";
+  const parts = semester.split("_");
+  const year = parts[0];
+  const term = parts.slice(1).join(" ");
+  return `${term} ${year}`;
+};
+
+export default function WeeklySchedule({ courses, onRemoveCourse }) {
+  const [selected, setSelected] = useState(null);
+
+  const handleRemove = () => {
+    onRemoveCourse(selected);
+    setSelected(null);
+  };
+
+  return (
+    <div className="planner-root">
+      <div>
+        <p className="planner-eyebrow">Grove City College</p>
+        <h1 className="planner-title">Schedule Planner</h1>
+      </div>
+
+      <div className="schedule-wrapper">
+        <div className="schedule">
+          <TimeColumn />
+          {DAYS.map((day) => (
+            <DayColumn
+              key={day}
+              day={day}
+              courses={courses}
+              onCourseClick={setSelected}
+            />
+          ))}
+        </div>
+      </div>
+
+      {/* Course detail + remove dialog */}
+      <Dialog open={!!selected} onOpenChange={(open) => !open && setSelected(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>
+              {selected?.subject} {selected?.number} {selected?.section} — {selected?.name}
+            </DialogTitle>
+            <DialogDescription>
+              <div className="mt-2 text-sm">Professor: {selected?.faculty}</div>
+              <div className="text-sm">Semester: {formatSemester(selected?.semester)}</div>
+              <div className="text-sm">Credits: {selected?.credits}</div>
+              <div className="text-sm">Location: {selected?.location}</div>
+              <div className="text-sm">Open Seats: {selected?.open_seats}</div>
+              <div className="text-sm">Total Seats: {selected?.total_seats}</div>
+
+              <div className="mt-2 text-sm font-semibold">Meetings:</div>
+              {selected?.times.map((m, i) => (
+                <div key={i} className="text-sm">
+                  {m.day} {formatTime(m.start)} – {formatTime(m.end)}
+                </div>
+              ))}
+
+              {selected?.description && (
+                <div className="mt-2 text-sm">{selected.description}</div>
+              )}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="mt-4 flex justify-between">
+            <Button
+              className="bg-red-600 hover:bg-red-700 text-white"
+              onClick={handleRemove}
+            >
+              Remove from Schedule
+            </Button>
+            <Button variant="outline" onClick={() => setSelected(null)}>
+              Close
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}

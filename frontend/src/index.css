@@ -1,0 +1,23 @@
+/* Google Fonts must come first */
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=DM+Sans:wght@400;500;600;700&display=swap');
+
+/* Tailwind base and utilities */
+@import "@fontsource-variable/inter";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Global reset */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* Body now matches the planner gradient */
+body {
+  background: linear-gradient(135deg, #0a0f1a 0%, #0f172a 50%, #0a0f1a 100%);
+  font-family: 'DM Sans', sans-serif;
+  color: #f1f5f9;
+  min-height: 100vh; /* ensures body covers full viewport */
+}

@@ -25,6 +25,9 @@ dependencies {
     implementation 'org.slf4j:slf4j-simple:2.0.16'
 
     implementation 'com.sun.mail:jakarta.mail:2.0.1'
+
+    // this is for rate my professor API
+    implementation 'org.json:json:20240303'
 }
 
 test {

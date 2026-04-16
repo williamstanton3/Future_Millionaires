@@ -118,7 +118,7 @@ public class RateMyProfApi {
                     .put("fallback", true);
 
             variables.put("query", searchQuery);
-            variables.put("first", 500);   // ← higher limit = fewer requests
+            variables.put("first", 500);   // higher limit = fewer requests
             variables.put("after", JSONObject.NULL);   // first page
 
             boolean hasNext = true;

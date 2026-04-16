@@ -118,7 +118,7 @@ public class RateMyProfApi {
                     .put("fallback", true);
 
             variables.put("query", searchQuery);
-            variables.put("first", 500);   // ← higher limit = fewer requests
+            variables.put("first", 500);   // higher limit = fewer requests
             variables.put("after", JSONObject.NULL);   // first page
 
             boolean hasNext = true;
@@ -145,7 +145,8 @@ public class RateMyProfApi {
                             node.getInt("numRatings"),
                             node.optDouble("avgRating", 0.0),
                             node.optDouble("avgDifficulty", 0.0),
-                            node.optString("department", "")
+                            node.optString("department", ""),
+                            node.optString("null")
                     );
 
                     professors.put(p.getLegacyId(), p);

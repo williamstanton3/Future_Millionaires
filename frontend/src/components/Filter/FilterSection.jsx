@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Input } from "../ui/input";
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "../ui/select";
 import { Button } from "../ui/button";
+import {Combobox,ComboboxInput,ComboboxContent,ComboboxList,ComboboxItem,ComboboxEmpty,} from "../ui/combobox";
 
 const DAYS = [
   { value: "M", label: "Mon" },
@@ -21,11 +22,16 @@ const TIME_OPTIONS = [
 
 export default function FilterSection({ semesters = [], departments = [], professors = [], numbers = [], creditOptions = [], activeSemester, onSemesterChange, onFilter }) {
   const [keyword, setKeyword] = useState("");
-  const [department, setDepartment] = useState("");
-  const [departmentText, setDepartmentText] = useState("");
-  const [courseNumber, setCourseNumber] = useState("");
-  const [courseNumberText, setCourseNumberText] = useState("");
-  const [professor, setProfessor] = useState("");
+
+  const [department, setDepartment] = useState(null);
+  const [deptSearch, setDeptSearch] = useState("");
+
+  const [courseNumber, setCourseNumber] = useState(null);
+  const [courseSearch, setCourseSearch] = useState("");
+
+  const [professor, setProfessor] = useState(null);
+  const [profSearch, setProfSearch] = useState("");
+
   const [selectedDays, setSelectedDays] = useState([]);
   const [startTime, setStartTime] = useState("");
   const [endTime, setEndTime] = useState("");
@@ -41,15 +47,27 @@ export default function FilterSection({ semesters = [], departments = [], profes
     onFilter({
       semester: activeSemester,
       keyword,
-      department: department || departmentText,
-      course_number: courseNumber || courseNumberText,
-      professor,
+      department: department ?? "",
+      course_number: courseNumber ?? "",
+      professor: professor ?? "",
       days: selectedDays,
       start_time: startTime,
       end_time: endTime,
       credits,
     });
   };
+
+  const filteredDepartments = departments.filter(d =>
+    d.toLowerCase().includes((deptSearch ?? "").toLowerCase())
+  );
+
+  const filteredCourses = numbers.filter(n =>
+    n.toString().toLowerCase().includes((courseSearch ?? "").toLowerCase())
+  );
+
+  const filteredProfessors = professors.filter(p =>
+    p.toLowerCase().includes((profSearch ?? "").toLowerCase())
+  );
 
   const formatTimeLabel = (time) => {
     const [hour, min] = time.split(":").map(Number);
@@ -78,8 +96,8 @@ export default function FilterSection({ semesters = [], departments = [], profes
 
       {/* Everything below is disabled until a semester is chosen */}
       <div className={locked ? "opacity-40 pointer-events-none select-none" : ""}>
-
         <div className="flex flex-col gap-4">
+
           <Input
             placeholder="Keyword"
             value={keyword}
@@ -87,54 +105,108 @@ export default function FilterSection({ semesters = [], departments = [], profes
             className="bg-gray-800 text-white placeholder-gray-400 w-96"
           />
 
-          <div className="flex gap-2 flex-wrap">
-            <Select value={department} onValueChange={(val) => {setDepartment(val === "all" ? "" : val); setDepartmentText("");} }>
-              <SelectTrigger className="w-48">
-                <SelectValue placeholder="Department" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Departments</SelectItem>
-                {departments.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
-              </SelectContent>
-            </Select>
-            <Input
-              placeholder="Or type department"
-              value={departmentText}
-              onChange={e => {setDepartmentText(e.target.value); setDepartment("");} }
+          {/* Department */}
+          <Combobox
+            value={department}
+            onValueChange={(val) => {
+              setDepartment(val);
+              setDeptSearch(val);
+            }}
+          >
+            <ComboboxInput
+              placeholder="Department"
+              value={deptSearch}
+              onChange={(e) => {
+                setDeptSearch(e.target.value);
+                setDepartment(null);
+              }}
+              showClear={!!department}
               className="w-48"
             />
-          </div>
 
-          <div className="flex gap-2 flex-wrap">
-            <Select value={courseNumber} onValueChange={ (val) => {setCourseNumber(val === "all" ? "" : val); setCourseNumberText("");} }>
-              <SelectTrigger className="w-32">
-                <SelectValue placeholder="Course #" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All</SelectItem>
-                {numbers.map(n => (
-                  <SelectItem key={n} value={n}>{n}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Input
-              placeholder="Or type course #"
-              value={courseNumberText}
-              onChange={e => {setCourseNumberText(e.target.value); setCourseNumber("");} }
+            <ComboboxContent>
+              <ComboboxList>
+                {filteredDepartments.length === 0 ? (
+                  <ComboboxEmpty>No departments found.</ComboboxEmpty>
+                ) : (
+                  filteredDepartments.map((d) => (
+                    <ComboboxItem key={d} value={d}>
+                      {d}
+                    </ComboboxItem>
+                  ))
+                )}
+              </ComboboxList>
+            </ComboboxContent>
+          </Combobox>
+
+          {/* Course Number */}
+          <Combobox
+            value={courseNumber}
+            onValueChange={(val) => {
+              setCourseNumber(val);
+              setCourseSearch(val);
+            }}
+          >
+            <ComboboxInput
+              placeholder="Course #"
+              value={courseSearch}
+              onChange={(e) => {
+                setCourseSearch(e.target.value);
+                setCourseNumber(null); // optional but recommended
+              }}
+              showClear={!!courseNumber}
               className="w-32"
             />
-          </div>
+            <ComboboxContent>
+              <ComboboxList>
+                {filteredCourses.length === 0 ? (
+                  <ComboboxEmpty>No courses found.</ComboboxEmpty>
+                ) : (
+                  filteredCourses.map((n) => (
+                    <ComboboxItem key={n} value={n}>
+                      {n}
+                    </ComboboxItem>
+                  ))
+                )}
+              </ComboboxList>
+            </ComboboxContent>
+          </Combobox>
 
-          <Select value={professor} onValueChange={(val) => setProfessor(val === "all" ? "" : val)}>
-            <SelectTrigger className="w-48">
-              <SelectValue placeholder="Professor" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Any</SelectItem>
-              {professors.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
-            </SelectContent>
-          </Select>
+          {/* Professor */}
+          <Combobox
+            value={professor}
+            onValueChange={(val) => {
+              setProfessor(val);
+              setProfSearch(val);
+            }}
+          >
+            <ComboboxInput
+              placeholder="Professor"
+              value={profSearch}
+              onChange={(e) => {
+                setProfSearch(e.target.value);
+                setProfessor(null);
+              }}
+              showClear={!!professor}
+              className="w-48"
+            />
 
+            <ComboboxContent>
+              <ComboboxList>
+                {filteredProfessors.length === 0 ? (
+                  <ComboboxEmpty>No professors found.</ComboboxEmpty>
+                ) : (
+                  filteredProfessors.map((p) => (
+                    <ComboboxItem key={p} value={p}>
+                      {p}
+                    </ComboboxItem>
+                  ))
+                )}
+              </ComboboxList>
+            </ComboboxContent>
+          </Combobox>
+
+          {/* Days + Time */}
           <div className="flex flex-col gap-2">
             <div className="flex gap-2 flex-wrap">
               {DAYS.map(d => (
@@ -164,6 +236,7 @@ export default function FilterSection({ semesters = [], departments = [], profes
             </div>
           </div>
 
+          {/* Credits */}
           <Select value={credits} onValueChange={(val) => setCredits(val === "all" ? "" : val)}>
             <SelectTrigger className="w-24">
               <SelectValue placeholder="Credits" />
@@ -177,6 +250,7 @@ export default function FilterSection({ semesters = [], departments = [], profes
           <Button onClick={handleApply} className="bg-blue-600 hover:bg-blue-700 text-white w-32">
             Apply
           </Button>
+
         </div>
       </div>
     </div>

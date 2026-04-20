@@ -13,6 +13,7 @@ import {
   deleteSavedSchedule
 } from "./api/ScheduleApi";
 import CourseList from "./components/Courses/CourseList";
+import ConflictModal from "./components/ConflictModal";
 import SavedSchedules from "./components/Schedule/SavedSchedules";
 import { Button } from "./components/ui/button";
 import {
@@ -32,6 +33,7 @@ export default function App() {
   const [savedSchedules, setSavedSchedules] = useState({});
 
   const [pendingLoad, setPendingLoad] = useState(null);
+  const [conflictData, setConflictData] = useState(null);
 
   const DAY_MAP = { M: "Mon", T: "Tue", W: "Wed", R: "Thu", F: "Fri" };
   const COLORS = ["#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6", "#ec4899"];
@@ -122,13 +124,19 @@ export default function App() {
         }))
       : [];
 
-    if (hasConflict(normalizedTimes)) {
-      throw new Error("Time conflict with an existing course.");
-    }
-
     const result = await addCourseToBackend(course);
+
     if (result.success === false) {
-      throw new Error(result.message || "Failed to add course.");
+      if (result.suggestedSchedules?.length > 0) {
+        // Time conflict with suggestions — show the conflict modal
+        setConflictData({
+          message: result.message,
+          suggestedSchedules: result.suggestedSchedules,
+        });
+      } else {
+        throw new Error(result.message || "Failed to add course.");
+      }
+      return;
     }
 
     setSchedule((prev) => [
@@ -139,6 +147,21 @@ export default function App() {
         times: normalizedTimes,
       },
     ]);
+  };
+
+  // Accepts a suggested alternative schedule after a time conflict.
+  const handleAcceptSuggestion = async (suggestedSchedule) => {
+    try {
+      await clearSchedule();
+      for (const course of suggestedSchedule.schedule) {
+        await addCourseToBackend(course);
+      }
+      const updated = await getActiveSchedule();
+      setSchedule(normalizeCourseList(updated.courses));
+      setConflictData(null);
+    } catch (err) {
+      console.error("Failed to apply suggested schedule:", err);
+    }
   };
 
   // Removes from frontend state and immediately syncs to the backend live schedule.
@@ -243,6 +266,14 @@ export default function App() {
       <WeeklySchedule courses={schedule} onRemoveCourse={handleRemoveCourse} />
 
       <SavedSchedules schedules={savedSchedules} onLoad={handleRequestLoad} onDelete={handleDeleteSaved} />
+
+      <ConflictModal
+        open={!!conflictData}
+        message={conflictData?.message}
+        suggestedSchedules={conflictData?.suggestedSchedules}
+        onAccept={handleAcceptSuggestion}
+        onClose={() => setConflictData(null)}
+      />
 
       <Dialog open={!!pendingLoad} onOpenChange={(open) => !open && setPendingLoad(null)}>
         <DialogContent className="max-w-sm">

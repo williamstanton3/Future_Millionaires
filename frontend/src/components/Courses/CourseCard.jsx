@@ -11,10 +11,14 @@ import {
 import { Button } from "@/components/ui/button";
 
 export default function CourseCard({ course, onAddCourse }) {
+  console.log("COURSE DATA:", course);
+
   const [detailOpen, setDetailOpen] = useState(false);
   const [statusOpen, setStatusOpen] = useState(false);
   const [addSuccess, setAddSuccess] = useState(null);
   const [errorMsg, setErrorMsg] = useState("");
+
+  const primaryProf = course.professors?.[0];
 
   const formatTime = (timeArr) => {
     if (!Array.isArray(timeArr)) return "";
@@ -52,13 +56,36 @@ export default function CourseCard({ course, onAddCourse }) {
       <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
         <DialogTrigger asChild>
           <div className="bg-gray-700 p-4 rounded-md shadow-md cursor-pointer hover:bg-gray-600 transition">
+
             <div className="font-bold text-lg">
               {course.subject} {course.number} {course.section}
             </div>
-            <div className="text-sm text-gray-300">{course.name}</div>
-            <div className="mt-2 text-sm">Professor: {course.faculty}</div>
-            <div className="text-sm">Semester: {formatSemester(course.semester)}</div>
-            <div className="text-sm">Credits: {course.credits}</div>
+
+            <div className="text-sm text-gray-300">
+              {course.name}
+            </div>
+
+            {/* Professor preview card */}
+            <div className="mt-3 flex items-center justify-between gap-4">
+              <div className="text-sm">
+                Professor: {primaryProf?.name || "TBA"}
+              </div>
+
+              <img
+                src={primaryProf?.imageUrl || "/default-prof.png"}
+                alt={primaryProf?.name || "Professor"}
+                className="w-20 h-20 object-cover rounded-full shrink-0"
+              />
+            </div>
+
+            <div className="text-sm mt-2">
+              Semester: {formatSemester(course.semester)}
+            </div>
+
+            <div className="text-sm">
+              Credits: {course.credits}
+            </div>
+
           </div>
         </DialogTrigger>
 
@@ -67,9 +94,22 @@ export default function CourseCard({ course, onAddCourse }) {
             <DialogTitle>
               {course.subject} {course.number} {course.section} - {course.name}
             </DialogTitle>
+
             <DialogDescription>
-              <div className="mt-2 text-sm">Professor: {course.faculty}</div>
-              <div className="text-sm">Semester: {formatSemester(course.semester)}</div>
+              {course.professors?.map((prof, index) => (
+                <div key={index} className="mt-2 flex items-center gap-2">
+                  <img
+                    src={prof.imageUrl || "/default-prof.png"}
+                    alt={prof.name}
+                    className="w-12 h-12 object-cover rounded-full"
+                  />
+                  <div className="text-sm">{prof.name}</div>
+                </div>
+              ))}
+
+              <div className="text-sm mt-2">
+                Semester: {formatSemester(course.semester)}
+              </div>
               <div className="text-sm">Credits: {course.credits}</div>
               <div className="text-sm">Section: {course.section}</div>
               <div className="text-sm">Location: {course.location}</div>
@@ -77,14 +117,16 @@ export default function CourseCard({ course, onAddCourse }) {
               <div className="text-sm">Total Seats: {course.total_seats}</div>
 
               <div className="mt-2 text-sm font-semibold">Meetings:</div>
-              {course.times.map((m, index) => (
+              {course.times?.map((m, index) => (
                 <div key={index}>
                   {m.day} {formatTime(m.start_time)} - {formatTime(m.end_time)}
                 </div>
               ))}
 
               {course.description && (
-                <div className="mt-2 text-sm">{course.description}</div>
+                <div className="mt-2 text-sm">
+                  {course.description}
+                </div>
               )}
             </DialogDescription>
           </DialogHeader>
@@ -111,8 +153,13 @@ export default function CourseCard({ course, onAddCourse }) {
                 : errorMsg}
             </DialogDescription>
           </DialogHeader>
+
           <Button
-            className={`mt-4 w-full ${addSuccess ? "bg-green-600 hover:bg-green-700" : "bg-red-600 hover:bg-red-700"}`}
+            className={`mt-4 w-full ${
+              addSuccess
+                ? "bg-green-600 hover:bg-green-700"
+                : "bg-red-600 hover:bg-red-700"
+            }`}
             onClick={() => setStatusOpen(false)}
           >
             OK

@@ -67,7 +67,9 @@ public class Filter {
             // loop through the list of professors given in the filter
             for (String prof : professors) {
                 // if the list of faculty for this given course contains the prof we are looking for, return true
-                if (course.getFaculty().stream().anyMatch(f -> f.toLowerCase().contains(prof.toLowerCase()))) {
+                if (course.getProfessors().stream()
+                        .anyMatch(p -> p.getName() != null &&
+                                p.getName().toLowerCase().contains(prof.toLowerCase()))) {
                     found = true;
                     break;
                 }
@@ -164,8 +166,7 @@ public class Filter {
                 || (course.getSection() != null && course.getSection().toLowerCase().contains(kw))
                 || (course.getLocation() != null && course.getLocation().toLowerCase().contains(kw))
                 || (course.getSemester() != null && course.getSemester().toLowerCase().contains(kw))
-                || (course.getFaculty() != null &&
-                course.getFaculty().stream().anyMatch(f -> f.toLowerCase().contains(kw)))
+                || (course.getProfessors() != null && course.getProfessors().stream().anyMatch(p -> p.getName() != null && p.getName().toLowerCase().contains(kw)))
                 || Integer.toString(course.getNumber()).contains(kw)) {
 
             return true;

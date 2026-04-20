@@ -1,9 +1,15 @@
 // src/api/courseApi.js
 
+const BASE = "http://localhost:7070";
+
+/* ---------------- META ---------------- */
+
 export async function fetchMeta() {
-  const res = await fetch("http://localhost:7070/courses/meta");
+  const res = await fetch(`${BASE}/courses/meta`);
   return res.json();
 }
+
+/* ---------------- COURSES ---------------- */
 
 export async function fetchCourses(filters) {
   const params = new URLSearchParams();
@@ -15,23 +21,65 @@ export async function fetchCourses(filters) {
   if (filters.semester) params.append("semester", filters.semester);
   if (filters.credits) params.append("credits", filters.credits);
 
-  // If specific days are selected use those, otherwise default to all weekdays
-  const daysToSearch = filters.days?.length > 0
+  const daysToSearch =
+    filters.days?.length > 0
       ? filters.days
       : ["M", "T", "W", "R", "F"];
 
-  // If a time range is provided, append each day with the time range
   if (filters.start_time && filters.end_time) {
-      daysToSearch.forEach((day) => {
-          params.append("times", `${day} ${filters.start_time}:00-${filters.end_time}:00`);
-      });
-  // If no time range, only append days that were explicitly selected
+    daysToSearch.forEach((day) => {
+      params.append(
+        "times",
+        `${day} ${filters.start_time}:00-${filters.end_time}:00`
+      );
+    });
   } else if (filters.days?.length > 0) {
-      filters.days.forEach((day) => {
-          params.append("times", day);
-      });
+    filters.days.forEach((day) => {
+      params.append("times", day);
+    });
   }
 
-  const res = await fetch(`http://localhost:7070/courses?${params.toString()}`);
+  const res = await fetch(`${BASE}/courses?${params.toString()}`);
+  return res.json();
+}
+
+/* ---------------- SCHEDULE ---------------- */
+
+export async function setSemester(semester) {
+  const res = await fetch(`${BASE}/schedule/semester?semester=${semester}`, {
+    method: "POST",
+  });
+
+  const data = await res.json();
+  return res.ok ? data : { success: false, ...data };
+}
+
+export async function addCourseToBackend(course) {
+  const res = await fetch(
+    `${BASE}/schedule/add?subject=${course.subject}&number=${course.number}&section=${course.section}`,
+    { method: "POST" }
+  );
+
+  const data = await res.json();
+  return res.ok ? data : { success: false, ...data };
+}
+
+export async function removeCourseFromBackend(course) {
+  const res = await fetch(
+    `${BASE}/schedule/remove?subject=${course.subject}&number=${course.number}&section=${course.section}`,
+    { method: "DELETE" }
+  );
+
+  const data = await res.json();
+  return res.ok ? data : { success: false, ...data };
+}
+
+export async function getActiveSchedule() {
+  const res = await fetch(`${BASE}/schedule`);
+  return res.json();
+}
+
+export async function getAllSchedules() {
+  const res = await fetch(`${BASE}/schedule/all`);
   return res.json();
 }

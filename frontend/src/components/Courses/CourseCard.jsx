@@ -11,22 +11,20 @@ import {
 import { Button } from "@/components/ui/button";
 
 export default function CourseCard({ course, onAddCourse }) {
-  console.log("COURSE DATA:", course);
-
   const [detailOpen, setDetailOpen] = useState(false);
   const [statusOpen, setStatusOpen] = useState(false);
   const [addSuccess, setAddSuccess] = useState(null);
   const [errorMsg, setErrorMsg] = useState("");
 
-  const primaryProf = course.professors?.[0];
-
-  const formatTime = (timeArr) => {
-    if (!Array.isArray(timeArr)) return "";
-    const [hour, min] = timeArr;
-    const h = hour % 12 === 0 ? 12 : hour % 12;
-    const ampm = hour < 12 ? "AM" : "PM";
-    return `${h}:${String(min).padStart(2, "0")} ${ampm}`;
-  };
+  function formatTime(time) {
+    if (Array.isArray(time)) {
+      let [hour, minute] = time;
+      const ampm = hour >= 12 ? "PM" : "AM";
+      hour = hour % 12 || 12;
+      return `${hour}:${minute.toString().padStart(2, "0")} ${ampm}`;
+    }
+    return "";
+  }
 
   const formatSemester = (semester) => {
     if (!semester) return "";
@@ -41,14 +39,33 @@ export default function CourseCard({ course, onAddCourse }) {
       await onAddCourse(course);
       setAddSuccess(true);
       setErrorMsg("");
-    } catch (e) {
-      setAddSuccess(false);
-      setErrorMsg(e.message || "Something went wrong. Please try again.");
-    } finally {
       setDetailOpen(false);
       setStatusOpen(true);
+    } catch (e) {
+      const isConflict = e.message?.toLowerCase().includes("conflict");
+      setAddSuccess(false);
+      setErrorMsg(e.message || "Something went wrong. Please try again.");
+      setDetailOpen(false);
+      // Don't show the status dialog for conflicts — the ConflictModal handles that
+      if (!isConflict) setStatusOpen(true);
     }
   };
+
+const groupedMeetings = {};
+
+course.times.forEach((m) => {
+  const key = `${m.start_time}-${m.end_time}`;
+
+  if (!groupedMeetings[key]) {
+    groupedMeetings[key] = {
+      days: [],
+      start: m.start_time,
+      end: m.end_time,
+    };
+  }
+
+  groupedMeetings[key].days.push(m.day);
+});
 
   return (
     <>
@@ -84,6 +101,34 @@ export default function CourseCard({ course, onAddCourse }) {
 
             <div className="text-sm">
               Credits: {course.credits}
+            </div>
+
+          <div className="relative bg-gray-700 p-4 rounded-md shadow-md cursor-pointer hover:bg-gray-600 transition flex items-center">
+
+            {/* LEFT */}
+            <div>
+              <div className="font-bold text-lg">
+                {course.subject} {course.number} {course.section}
+              </div>
+              <div className="text-sm text-gray-300">{course.name}</div>
+              <div className="text-sm mt-1">Prof: {course.faculty}</div>
+            </div>
+
+            {/* CENTER (truly centered regardless of sides) */}
+            <div className="absolute left-1/2 -translate-x-1/2 text-sm text-center">
+              <div className="text-sm">
+                <span className="font-semibold">Meetings:</span>{" "}
+                {Object.values(groupedMeetings).map((g, i) => (
+                  <div key={i}>
+                    {g.days.join("")} {formatTime(g.start)} - {formatTime(g.end)}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* RIGHT (pushed all the way right) */}
+            <div className="ml-auto text-sm font-semibold whitespace-nowrap">
+              {course.credits} credits
             </div>
 
           </div>

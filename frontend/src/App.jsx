@@ -133,10 +133,8 @@ export default function App() {
           message: result.message,
           suggestedSchedules: result.suggestedSchedules,
         });
-      } else {
-        throw new Error(result.message || "Failed to add course.");
       }
-      return;
+      throw new Error(result.message || "Failed to add course.");
     }
 
     setSchedule((prev) => [

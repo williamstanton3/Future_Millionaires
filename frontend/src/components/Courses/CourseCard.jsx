@@ -39,12 +39,15 @@ export default function CourseCard({ course, onAddCourse }) {
       await onAddCourse(course);
       setAddSuccess(true);
       setErrorMsg("");
-    } catch (e) {
-      setAddSuccess(false);
-      setErrorMsg(e.message || "Something went wrong. Please try again.");
-    } finally {
       setDetailOpen(false);
       setStatusOpen(true);
+    } catch (e) {
+      const isConflict = e.message?.toLowerCase().includes("conflict");
+      setAddSuccess(false);
+      setErrorMsg(e.message || "Something went wrong. Please try again.");
+      setDetailOpen(false);
+      // Don't show the status dialog for conflicts — the ConflictModal handles that
+      if (!isConflict) setStatusOpen(true);
     }
   };
 

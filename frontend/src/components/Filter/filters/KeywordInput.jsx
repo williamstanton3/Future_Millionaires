@@ -7,7 +7,7 @@ export default function KeywordInput({ keyword, onChange }) {
       placeholder="Keyword"
       value={keyword}
       onChange={e => onChange(e.target.value)}
-      className="bg-gray-800 text-white placeholder-gray-400 w-96"
+      className="bg-gray-800 text-white placeholder-gray-400 w-full"
     />
   );
 }

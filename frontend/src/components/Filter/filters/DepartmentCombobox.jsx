@@ -27,7 +27,7 @@ export default function DepartmentCombobox({ departments = [], value, onChange }
           setSearch(value ?? "");
         }}
         showClear={!!value}
-        className="w-48"
+        className="w-full"
       />
       <ComboboxContent>
         <ComboboxList>

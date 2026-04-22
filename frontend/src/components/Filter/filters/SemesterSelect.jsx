@@ -6,7 +6,7 @@ export default function SemesterSelect({ semesters = [], activeSemester, onSemes
     <div>
       <p className="text-sm text-gray-400 mb-1">Select a semester to begin</p>
       <Select value={activeSemester} onValueChange={onSemesterChange}>
-        <SelectTrigger className="w-48">
+        <SelectTrigger className="w-full">
           <SelectValue placeholder="Select Semester" />
         </SelectTrigger>
         <SelectContent>

@@ -4,7 +4,7 @@ import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from ".
 export default function CreditsSelect({ creditOptions = [], value, onChange }) {
   return (
     <Select value={value} onValueChange={(val) => onChange(val === "all" ? "" : val)}>
-      <SelectTrigger className="w-24">
+      <SelectTrigger className="w-full">
         <SelectValue placeholder="Credits" />
       </SelectTrigger>
       <SelectContent>

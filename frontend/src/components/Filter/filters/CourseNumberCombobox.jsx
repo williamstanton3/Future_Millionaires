@@ -27,7 +27,7 @@ export default function CourseNumberCombobox({ numbers = [], value, onChange }) 
           setSearch(value != null ? String(value) : "");
         }}
         showClear={!!value}
-        className="w-32"
+        className="w-full"
       />
       <ComboboxContent>
         <ComboboxList>

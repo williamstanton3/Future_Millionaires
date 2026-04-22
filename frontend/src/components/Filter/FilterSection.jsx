@@ -9,7 +9,16 @@ import ProfessorCombobox from "./filters/ProfessorCombobox";
 import DayTimeFilter from "./filters/DayTimeFilter";
 import CreditsSelect from "./filters/CreditsSelect";
 
-export default function FilterSection({ semesters = [], departments = [], professors = [], numbers = [], creditOptions = [], activeSemester, onSemesterChange, onFilter }) {
+export default function FilterSection({
+  semesters = [],
+  departments = [],
+  professors = [],
+  numbers = [],
+  creditOptions = [],
+  activeSemester,
+  onSemesterChange,
+  onFilter,
+}) {
   const [keyword, setKeyword] = useState("");
   const [department, setDepartment] = useState(null);
   const [courseNumber, setCourseNumber] = useState(null);
@@ -20,10 +29,6 @@ export default function FilterSection({ semesters = [], departments = [], profes
   const [credits, setCredits] = useState("");
 
   const locked = !activeSemester;
-
-  const toggleDay = (day) => setSelectedDays(prev =>
-    prev.includes(day) ? prev.filter(d => d !== day) : [...prev, day]
-  );
 
   const handleApply = () => {
     onFilter({
@@ -40,58 +45,78 @@ export default function FilterSection({ semesters = [], departments = [], profes
   };
 
   return (
-    <div className="flex flex-col gap-4 p-4 bg-gray-900 rounded-md shadow-md">
+    <>
+      {/* Row 1: Semester */}
+      <div className="w-48">
+        <SemesterSelect
+          semesters={semesters}
+          activeSemester={activeSemester}
+          onSemesterChange={onSemesterChange}
+        />
+      </div>
 
-      <SemesterSelect
-        semesters={semesters}
-        activeSemester={activeSemester}
-        onSemesterChange={onSemesterChange}
-      />
-
+      {/* Row 2: Filters */}
       <div className={locked ? "opacity-40 pointer-events-none select-none" : ""}>
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-wrap gap-4 items-end">
 
-          <KeywordInput keyword={keyword} onChange={setKeyword} />
+          <div className="w-48">
+            <KeywordInput keyword={keyword} onChange={setKeyword} />
+          </div>
 
-          <DepartmentCombobox
-            departments={departments}
-            value={department}
-            onChange={setDepartment}
-          />
+          <div className="w-32">
+            <DepartmentCombobox
+              departments={departments}
+              value={department}
+              onChange={setDepartment}
+            />
+          </div>
 
-          <CourseNumberCombobox
-            numbers={numbers}
-            value={courseNumber}
-            onChange={setCourseNumber}
-          />
+          <div className="w-32">
+            <CourseNumberCombobox
+              numbers={numbers}
+              value={courseNumber}
+              onChange={setCourseNumber}
+            />
+          </div>
 
-          <ProfessorCombobox
-            professors={professors}
-            value={professor}
-            onChange={setProfessor}
-          />
+          <div className="w-48">
+            <ProfessorCombobox
+              professors={professors}
+              value={professor}
+              onChange={setProfessor}
+            />
+          </div>
 
-          <DayTimeFilter
-            selectedDays={selectedDays}
-            onToggleDay={toggleDay}
-            startTime={startTime}
-            onStartTimeChange={setStartTime}
-            endTime={endTime}
-            onEndTimeChange={setEndTime}
-          />
+          <div className="w-32">
+            <CreditsSelect
+              creditOptions={creditOptions}
+              value={credits}
+              onChange={setCredits}
+            />
+          </div>
 
-          <CreditsSelect
-            creditOptions={creditOptions}
-            value={credits}
-            onChange={setCredits}
-          />
+          <div className="w-60">
+            <DayTimeFilter
+              selectedDays={selectedDays}
+              setSelectedDays={setSelectedDays}
+              startTime={startTime}
+              onStartTimeChange={setStartTime}
+              endTime={endTime}
+              onEndTimeChange={setEndTime}
+            />
+          </div>
 
-          <Button onClick={handleApply} className="bg-blue-600 hover:bg-blue-700 text-white w-32">
-            Apply
-          </Button>
+          <div className="ml-auto">
+            <Button
+              onClick={handleApply}
+              className="bg-blue-600 hover:bg-blue-700 text-white w-32"
+            >
+              Apply
+            </Button>
+          </div>
 
         </div>
       </div>
-    </div>
+    </>
   );
 }

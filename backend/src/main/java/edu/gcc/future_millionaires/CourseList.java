@@ -12,7 +12,7 @@ public class CourseList {
 
     private final List<Course> courses;
 
-    public CourseList() {
+    public CourseList(RateMyProfApi rmpApi) {
         try {
             ObjectMapper mapper = new ObjectMapper();
             mapper.registerModule(new JavaTimeModule());
@@ -94,14 +94,17 @@ public class CourseList {
                                 "https://img.freepik.com/premium-vector/default-avatar-profile-icon-social-media-user-image-gray-avatar-icon-blank-profile-silhouette-vector-illustration_561158-3407.jpg"
                         );
 
+                        // Look up RMP data by last name
+                        Professor rmp = rmpApi.getProfessorByLastName(last);
+
                         Professor prof = new Professor(
-                                cleanedName, // id
-                                0,
+                                cleanedName,                                        // id
+                                rmp != null ? rmp.getLegacyId() : 0,               // legacyId
                                 first,
                                 last,
-                                0,
-                                0.0,
-                                0.0,
+                                rmp != null ? rmp.getNumOfRatings() : 0,           // numOfRatings
+                                rmp != null ? rmp.getOverallRating() : 0.0,        // overallRating
+                                rmp != null ? rmp.getAvgDifficulty() : 0.0,        // avgDifficulty
                                 course.getSubject(),
                                 imageUrl
                         );

@@ -73,7 +73,7 @@ public class RateMyProfApi {
 
             if (edges.length() > 0) {
                 JSONObject node = edges.getJSONObject(0).getJSONObject("node");
-                System.out.println("✅ Found: " + node.getString("name") +
+                System.out.println("Found: " + node.getString("name") +
                         " | GraphQL ID: " + node.getString("id"));
                 return node.getString("id");
             }

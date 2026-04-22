@@ -5,7 +5,8 @@ import io.javalin.Javalin;
 public class Main {
     public static void main(String[] args) {
 
-        CourseList courseList = new CourseList();
+        RateMyProfApi rmpApi = new RateMyProfApi("U2Nob29sLTM4NA==");
+        CourseList courseList = new CourseList(rmpApi);
         Student student = new Student(1);
 
         // Load persisted schedules from disk before starting the server

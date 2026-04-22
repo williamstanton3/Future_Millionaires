@@ -145,7 +145,8 @@ public class RateMyProfApi {
                             node.getInt("numRatings"),
                             node.optDouble("avgRating", 0.0),
                             node.optDouble("avgDifficulty", 0.0),
-                            node.optString("department", "")
+                            node.optString("department", ""),
+                            node.optString("null")
                     );
 
                     professors.put(p.getLegacyId(), p);

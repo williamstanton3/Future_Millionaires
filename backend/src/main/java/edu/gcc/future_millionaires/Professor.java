@@ -10,9 +10,10 @@ public class Professor {
     private final double overallRating;
     private final double avgDifficulty;
     private final String department;
+    private final String imageUrl;
 
     public Professor(String id, int legacyId, String firstName, String lastName,
-                     int numOfRatings, double overallRating, double avgDifficulty, String department) {
+                     int numOfRatings, double overallRating, double avgDifficulty, String department, String imageUrl) {
         this.id = id;
         this.legacyId = legacyId;
         this.firstName = firstName;
@@ -22,6 +23,7 @@ public class Professor {
         this.overallRating = (numOfRatings < 1) ? 0.0 : overallRating;
         this.avgDifficulty = avgDifficulty;
         this.department = department;
+        this.imageUrl = imageUrl;
     }
 
     public String getId() { return id; }
@@ -33,4 +35,5 @@ public class Professor {
     public double getOverallRating() { return overallRating; }
     public double getAvgDifficulty() { return avgDifficulty; }
     public String getDepartment() { return department; }
+    public String getImageUrl() { return imageUrl; }
 }

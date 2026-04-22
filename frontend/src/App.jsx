@@ -10,7 +10,8 @@ import {
   getAllSchedules,
   getActiveSchedule,
   clearSchedule,
-  deleteSavedSchedule
+  deleteSavedSchedule,
+  loadSavedSchedule
 } from "./api/ScheduleApi";
 import CourseList from "./components/Courses/CourseList";
 import SavedSchedules from "./components/Schedule/SavedSchedules";
@@ -183,20 +184,16 @@ export default function App() {
   };
 
   const handleConfirmLoad = async () => {
-      const { semester, courses } = pendingLoad;
+      const { semester } = pendingLoad;
       setPendingLoad(null);
-      setActiveSemester(semester);
-      setCourses([]);
-
-      const normalized = normalizeCourseList(courses.schedule ?? []);
-      setSchedule(normalized);
 
       try {
-          await setSemester(semester);  // sets active semester, creates blank if needed
-          await clearSchedule();        // wipe whatever was there
-          await Promise.all(normalized.map((course) => addCourseToBackend(course)));
+          const result = await loadSavedSchedule(semester);
+          setActiveSemester(semester);
+          setCourses([]);
+          setSchedule(normalizeCourseList(result.courses ?? []));
       } catch (err) {
-          console.error("Failed to sync loaded schedule to backend:", err);
+          console.error("Failed to load schedule:", err);
       }
   };
 

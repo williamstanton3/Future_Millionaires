@@ -45,28 +45,23 @@ public class ScheduleController {
             // Ensure student exists
             upsertStudent();
 
-            // Clear any existing active semester
-            db.patch("/rest/v1/schedules?student_id=eq." + STUDENT_ID
-                            + "&is_finalized=eq.false",
-                    "{\"active_semester\": false}");
-
-            // Upsert this semester's schedule and mark it active
+            // Insert schedule if it doesn't exist yet for this semester
             ObjectNode node = db.mapper.createObjectNode()
-                    .put("student_id",      STUDENT_ID)
-                    .put("semester",        semester)
-                    .put("is_finalized",    false)
-                    .put("active_semester", true)
-                    .put("credits",         0);
+                    .put("student_id",       STUDENT_ID)
+                    .put("semester",         semester)
+                    .put("display_semester", semester)
+                    .put("is_finalized",     false)
+                    .put("credits",          0);
+            db.post("/rest/v1/schedules", node.toString(), "resolution=ignore-duplicates");
 
-            db.post("/rest/v1/schedules", node.toString(),
-                    "resolution=ignore-duplicates");
+            // Update active semester on student row
+            db.patch("/rest/v1/students?id=eq." + STUDENT_ID,
+                    "{\"active_semester\": \"" + semester + "\"}");
 
-            // Re-activate if it already existed
-            db.patch("/rest/v1/schedules?student_id=eq." + STUDENT_ID
-                            + "&semester=eq." + semester,
-                    "{\"active_semester\": true}");
-
-            ctx.json(Map.of("message", "Active semester set to " + semester, "semester", semester));
+            ctx.json(Map.of(
+                    "message",  "Active semester set to " + semester,
+                    "semester", semester
+            ));
         });
 
         // POST /schedule/add?subject=COMP&number=422&section=A
@@ -95,7 +90,7 @@ public class ScheduleController {
             }
 
             String scheduleId = schedule.get("id").asText();
-            String semester   = schedule.get("semester").asText();
+            String semester   = schedule.get("display_semester").asText();
 
             // Find the course in CourseList
             Course toAdd = courseList.getCourses().stream()
@@ -114,7 +109,7 @@ public class ScheduleController {
             // Load existing courses to check for conflicts
             List<Course> existing = loadCoursesForSchedule(scheduleId);
 
-            // Build a temporary schedule to reuse your existing logic
+            // Build a temporary schedule to reuse existing conflict logic
             Schedule tempSchedule = new Schedule(STUDENT_ID, semester, existing);
             boolean success = tempSchedule.addCourse(toAdd);
 
@@ -193,7 +188,7 @@ public class ScheduleController {
             }
 
             String scheduleId = schedule.get("id").asText();
-            String semester   = schedule.get("semester").asText();
+            String semester   = schedule.get("display_semester").asText();
 
             // Look up course ID
             JsonNode courseRows = db.get("/rest/v1/courses?subject=eq." + subject
@@ -241,21 +236,27 @@ public class ScheduleController {
                 return;
             }
 
+            // Mark as finalized and clear active semester on student
             db.patch("/rest/v1/schedules?id=eq." + scheduleId,
-                    "{\"is_finalized\": true, \"active_semester\": false}");
+                    "{\"is_finalized\": true}");
+            db.patch("/rest/v1/students?id=eq." + STUDENT_ID,
+                    "{\"active_semester\": null}");
 
             JsonNode saved = db.get("/rest/v1/schedules?student_id=eq."
                     + STUDENT_ID + "&is_finalized=eq.true&select=*");
 
-            ctx.json(Map.of("success", true, "message", "Schedule finalized and saved.",
-                    "savedSchedules", saved));
+            ctx.json(Map.of(
+                    "success",        true,
+                    "message",        "Schedule finalized and saved.",
+                    "savedSchedules", buildSavedSchedulesMap(saved)
+            ));
         });
 
         // GET /schedule/all
         app.get("/schedule/all", ctx -> {
             JsonNode saved = db.get("/rest/v1/schedules?student_id=eq."
                     + STUDENT_ID + "&is_finalized=eq.true&select=*");
-            ctx.json(saved);
+            ctx.json(buildSavedSchedulesMap(saved));
         });
 
         // DELETE /schedule/clear
@@ -282,7 +283,7 @@ public class ScheduleController {
             }
 
             JsonNode rows = db.get("/rest/v1/schedules?student_id=eq." + STUDENT_ID
-                    + "&semester=eq." + semester
+                    + "&display_semester=eq." + semester
                     + "&is_finalized=eq.true&select=id");
 
             if (rows.size() == 0) {
@@ -296,6 +297,80 @@ public class ScheduleController {
 
             ctx.status(200).json(Map.of("success", true, "message", "Schedule deleted."));
         });
+
+        // POST /schedule/load?semester=2023_Fall
+        app.post("/schedule/load", ctx -> {
+            String semester = ctx.queryParam("semester");
+            if (semester == null) {
+                ctx.status(400).json(Map.of("message", "Missing required query param: semester"));
+                return;
+            }
+
+            // Find the finalized schedule to copy from
+            JsonNode savedRows = db.get("/rest/v1/schedules?student_id=eq." + STUDENT_ID
+                    + "&display_semester=eq." + semester
+                    + "&is_finalized=eq.true&select=*");
+
+            if (savedRows.size() == 0) {
+                ctx.status(404).json(Map.of("message", "No saved schedule found for " + semester));
+                return;
+            }
+
+            String savedScheduleId = savedRows.get(0).get("id").asText();
+            List<Course> courses = loadCoursesForSchedule(savedScheduleId);
+
+            // Create a unique internal semester name for the loaded copy
+            // String newSemester = semester + "_loaded_" + System.currentTimeMillis();
+
+            // Delete only existing non-finalized schedule for this semester
+            JsonNode existingForSemester = db.get("/rest/v1/schedules?student_id=eq." + STUDENT_ID
+                    + "&semester=eq." + semester
+                    + "&is_finalized=eq.false&select=id");
+
+            for (JsonNode row : existingForSemester) {
+                db.delete("/rest/v1/schedules?id=eq." + row.get("id").asText());
+            }
+
+            // Create a brand new non-finalized schedule
+            ObjectNode node = db.mapper.createObjectNode()
+                    .put("student_id",       STUDENT_ID)
+                    .put("semester",         semester)
+                    .put("display_semester", semester)
+                    .put("is_finalized",     false)
+                    .put("credits",          savedRows.get(0).get("credits").asInt());
+
+            JsonNode inserted = db.post("/rest/v1/schedules", node.toString(),
+                    "return=representation");
+            String newScheduleId = inserted.get(0).get("id").asText();
+
+            // Set active semester on student to the new internal semester name
+            db.patch("/rest/v1/students?id=eq." + STUDENT_ID,
+                    "{\"active_semester\": \"" + semester + "\"}");
+
+            // Copy all courses from the saved schedule into the new one
+            for (Course course : courses) {
+                JsonNode courseRows = db.get("/rest/v1/courses?subject=eq." + course.getSubject()
+                        + "&number=eq." + course.getNumber()
+                        + "&section=eq." + course.getSection()
+                        + "&semester=eq." + course.getSemester()
+                        + "&select=id");
+
+                if (courseRows.size() == 0) continue;
+
+                String courseId = courseRows.get(0).get("id").asText();
+                ObjectNode link = db.mapper.createObjectNode()
+                        .put("schedule_id", newScheduleId)
+                        .put("course_id",   courseId);
+                db.post("/rest/v1/schedule_courses", link.toString(), "");
+            }
+
+            ctx.json(Map.of(
+                    "success",  true,
+                    "semester", semester,
+                    "courses",  courses,
+                    "credits",  savedRows.get(0).get("credits").asInt()
+            ));
+        });
     }
 
     // -------------------------------------------------------------------------
@@ -308,8 +383,20 @@ public class ScheduleController {
     }
 
     private JsonNode getActiveSchedule() throws Exception {
+        // Look up active semester from student row
+        JsonNode student = db.get("/rest/v1/students?id=eq." + STUDENT_ID
+                + "&select=active_semester");
+        if (student.size() == 0) return null;
+
+        JsonNode activeSemesterNode = student.get(0).get("active_semester");
+        if (activeSemesterNode == null || activeSemesterNode.isNull()) return null;
+
+        String activeSemester = activeSemesterNode.asText();
+
+        // Find the non-finalized schedule for this semester
         JsonNode rows = db.get("/rest/v1/schedules?student_id=eq." + STUDENT_ID
-                + "&active_semester=eq.true&is_finalized=eq.false&select=*");
+                + "&semester=eq." + activeSemester
+                + "&is_finalized=eq.false&select=*");
         if (rows.size() == 0) return null;
         return rows.get(0);
     }
@@ -340,5 +427,21 @@ public class ScheduleController {
             courses.add(course);
         }
         return courses;
+    }
+
+    private Map<String, Object> buildSavedSchedulesMap(JsonNode rows) throws Exception {
+        Map<String, Object> map = new java.util.LinkedHashMap<>();
+        for (JsonNode row : rows) {
+            String key = row.has("display_semester") && !row.get("display_semester").isNull()
+                    ? row.get("display_semester").asText()
+                    : row.get("semester").asText();
+            String scheduleId = row.get("id").asText();
+            List<Course> courses = loadCoursesForSchedule(scheduleId);
+            map.put(key, Map.of(
+                    "schedule", courses,
+                    "credits",  row.get("credits").asInt()
+            ));
+        }
+        return map;
     }
 }

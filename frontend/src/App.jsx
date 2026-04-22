@@ -13,7 +13,7 @@ import {
   deleteSavedSchedule
 } from "./api/ScheduleApi";
 import CourseList from "./components/Courses/CourseList";
-import ConflictModal from "./components/ConflictModal";
+import ConflictModal from "./components/ConflictModal/ConflictModal";
 import SavedSchedules from "./components/Schedule/SavedSchedules";
 import { Button } from "./components/ui/button";
 import {

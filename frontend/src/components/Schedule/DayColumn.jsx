@@ -24,7 +24,7 @@ export default function DayColumn({ day, courses, onCourseClick }) {
       <div className="day-column-body">
         {dayCourses.map(course =>
           course.times
-            .filter(t => t.day === day)
+            .filter(t => t.day === day && t.start && t.end)
             .map((t, idx) => {
               const startH = Number(t.start.split(":")[0]);
               const startM = Number(t.start.split(":")[1]);
@@ -32,7 +32,7 @@ export default function DayColumn({ day, courses, onCourseClick }) {
               const endM = Number(t.end.split(":")[1]);
 
               const top = ((startH - 8) * 60 + startM);
-              const height = ((endH - startH) * 60 + (endM - startM));
+              const height = Math.max(((endH - startH) * 60 + (endM - startM)), 20);
 
               return (
                 <div
@@ -57,3 +57,4 @@ export default function DayColumn({ day, courses, onCourseClick }) {
     </div>
   );
 }
+

@@ -13,28 +13,35 @@ import {
   CarouselItem,
   CarouselPrevious,
   CarouselNext,
-  useCarousel,
 } from "@/components/ui/carousel";
 
-import TimeColumn from "./Schedule/TimeColumn";
-import DayColumn from "./Schedule/DayColumn";
 import "./Schedule/Schedule.css";
 
 const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri"];
+const DAY_MAP = { M: "Mon", T: "Tue", W: "Wed", R: "Thu", F: "Fri" };
 
-/* ---------------- SAFE NORMALIZATION ---------------- */
+/* ---------------- NORMALIZATION ---------------- */
 
 function normalizeCourse(course) {
   if (!course) return null;
 
-  const times = (course.times ?? []).map((t) => {
-    const toStr = (v) =>
-      Array.isArray(v)
-        ? `${String(v[0]).padStart(2, "0")}:${String(v[1]).padStart(2, "0")}`
-        : v;
+  const toStr = (v) => {
+    if (v == null) return null;
+    if (Array.isArray(v))
+      return `${String(v[0]).padStart(2, "0")}:${String(v[1]).padStart(2, "0")}`;
+    return String(v);
+  };
 
-    return { day: t.day, start: toStr(t.start), end: toStr(t.end) };
-  });
+  const times = (course.times ?? [])
+    .map((t) => {
+      const start = toStr(t.start_time ?? t.start);
+      const end = toStr(t.end_time ?? t.end);
+      const day = DAY_MAP[t.day] ?? t.day;
+
+      if (!day || !start || !end) return null;
+      return { day, start, end };
+    })
+    .filter(Boolean);
 
   return {
     ...course,
@@ -43,43 +50,18 @@ function normalizeCourse(course) {
   };
 }
 
-/* ---------------- SAFE EXTRACTORS ---------------- */
-
 function extractSchedule(s) {
-  return s?.schedule || s?.courses || s?.getSchedule?.() || [];
+  if (!s) return [];
+  const raw =
+    s.schedule ?? s.courses ?? s.getSchedule?.() ?? (Array.isArray(s) ? s : []);
+  return Array.isArray(raw) ? raw : [];
 }
 
 function extractCredits(s) {
   return s?.credits ?? s?.getCredits?.() ?? 0;
 }
 
-/* ---------------- CAROUSEL COUNTER ---------------- */
-
-function CarouselCounter({ total }) {
-  const { api } = useCarousel();
-  const [current, setCurrent] = useState(1);
-
-  useEffect(() => {
-    if (!api) return;
-
-    const update = () => {
-      setCurrent(api.selectedScrollSnap() + 1);
-    };
-
-    update();
-    api.on("select", update);
-
-    return () => api.off("select", update);
-  }, [api]);
-
-  return (
-    <span className="text-sm text-gray-400">
-      {current} of {total}
-    </span>
-  );
-}
-
-/* ---------------- MAIN COMPONENT ---------------- */
+/* ---------------- MAIN ---------------- */
 
 export default function ConflictModal({
   open,
@@ -91,14 +73,10 @@ export default function ConflictModal({
   const [carouselApi, setCarouselApi] = useState(null);
   const [selectedIdx, setSelectedIdx] = useState(0);
 
-  /* sync index with carousel */
   useEffect(() => {
     if (!carouselApi) return;
 
-    const update = () => {
-      setSelectedIdx(carouselApi.selectedScrollSnap());
-    };
-
+    const update = () => setSelectedIdx(carouselApi.selectedScrollSnap());
     update();
     carouselApi.on("select", update);
 
@@ -108,123 +86,168 @@ export default function ConflictModal({
   if (!suggestedSchedules?.length) return null;
 
   const total = suggestedSchedules.length;
-  const current = suggestedSchedules[selectedIdx];
-
-  const courses = extractSchedule(current).map(normalizeCourse);
-  const credits = extractCredits(current);
+  const currentSchedule = suggestedSchedules[selectedIdx];
 
   const handleAccept = () => {
-    onAccept(current);
+    onAccept(currentSchedule);
     onClose();
   };
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
-      {/* 🔥 FIX 1: FLEX + HEIGHT CONSTRAINT */}
-      <DialogContent className="
-        !max-w-[95vw]
-        w-full
-        max-h-[90vh]
-        overflow-hidden
-        bg-gray-900 text-white border border-gray-700
-        flex flex-col
-      ">
-        <DialogHeader>
-          <DialogTitle className="text-red-400 text-lg">
+      <DialogContent className="!w-[50vw] !max-w-none h-[92vh] bg-gray-900 text-white border border-gray-700 p-0 flex flex-col overflow-hidden">
+        {/* Header */}
+        <DialogHeader className="px-8 pt-6 pb-4 border-b border-gray-800">
+          <DialogTitle className="text-red-400 text-2xl">
             Time Conflict Detected
           </DialogTitle>
-          <DialogDescription className="text-gray-300">
+          <DialogDescription className="text-gray-300 text-base mt-1">
             {message}
           </DialogDescription>
         </DialogHeader>
 
-        {/* 🔥 FIX 2: FLEX CONTAINER FOR CAROUSEL */}
-        <div className="flex flex-col flex-1 min-h-0">
-
+        {/* Carousel Container */}
+        <div className="flex-1 flex flex-col min-h-0 px-8 py-6">
           <Carousel
             setApi={setCarouselApi}
-            opts={{ loop: false }}
-            className="w-full px-8 flex-1 min-h-0"
+            opts={{ loop: false, align: "start" }}
+            className="w-full flex-1 flex flex-col"
           >
-            <div className="flex items-center justify-center gap-4 mb-2 text-sm text-gray-300 leading-none">
-              <CarouselPrevious inline className="w-7 h-7 flex items-center justify-center p-0 shrink-0" />
-              <CarouselCounter total={total} />
-              <CarouselNext inline className="w-7 h-7 flex items-center justify-center p-0 shrink-0" />
+            {/* Top navigation */}
+            <div className="flex items-center justify-center gap-6 mb-6 text-sm text-gray-400">
+              <CarouselPrevious className="h-9 w-9" />
+              <span className="font-medium">
+                {selectedIdx + 1} of {total}
+              </span>
+              <CarouselNext className="h-9 w-9" />
             </div>
 
-            <CarouselContent>
+            <CarouselContent className="flex-1 min-h-0">
               {suggestedSchedules.map((suggestion, i) => {
-                const slideCourses = extractSchedule(suggestion).map(normalizeCourse);
-                const slideCredits = extractCredits(suggestion);
+                const courses = extractSchedule(suggestion)
+                  .map(normalizeCourse)
+                  .filter(Boolean);
+
+                const credits = extractCredits(suggestion);
 
                 return (
-                  <CarouselItem key={i} className="basis-full min-h-0">
-                    {/* 🔥 FIX 3: INTERNAL SCROLL AREA */}
-                    <div className="flex flex-col gap-3 h-full overflow-y-auto pr-2">
-
-                      {/* header */}
-                      <div className="text-sm text-gray-400">
-                        {slideCourses.length} course
-                        {slideCourses.length !== 1 ? "s" : ""} · {slideCredits} credits
+                  <CarouselItem key={i} className="h-full">
+                    <div className="flex flex-col h-full gap-5">
+                      {/* Info bar */}
+                      <div className="flex-shrink-0 text-sm text-gray-400">
+                        {courses.length} course{courses.length !== 1 ? "s" : ""}{" "}
+                        · {credits} credits
                       </div>
 
-                      {/* schedule grid */}
-                      <div className="schedule-wrapper rounded-md overflow-hidden border border-gray-700 flex-shrink-0">
-                        <div className="schedule max-h-[40vh] overflow-y-auto">
-                          <TimeColumn />
-                          {DAYS.map((day) => (
-                            <DayColumn
-                              key={day}
-                              day={day}
-                              courses={slideCourses}
-                              onCourseClick={() => {}}
-                            />
-                          ))}
+                      {/* IMPROVED SCHEDULE GRID */}
+                      <div className="flex-1 min-h-0 border border-gray-700 rounded-xl bg-gray-950 overflow-hidden grid grid-cols-[70px_repeat(5,1fr)]">
+                        {/* Time labels column */}
+                        <div className="border-r border-gray-700 flex flex-col text-[10px] text-gray-500 relative">
+                          {Array.from({ length: 13 }, (_, i) => {
+                            const hour = 8 + i;
+                            return (
+                              <div
+                                key={i}
+                                className="flex-1 flex items-start justify-end pr-2 border-b border-gray-800 last:border-b-0"
+                              >
+                                <span className="translate-y-[-4px]">
+                                  {hour}:00
+                                </span>
+                              </div>
+                            );
+                          })}
                         </div>
-                      </div>
 
-                      {/* course list */}
-                      <div className="flex flex-col gap-1 max-h-32 overflow-y-auto">
-                        {slideCourses.map((c, j) => (
+                        {/* Day columns */}
+                        {DAYS.map((day) => (
                           <div
-                            key={j}
-                            className="flex items-center gap-2 text-sm text-gray-300"
+                            key={day}
+                            className="relative border-r border-gray-700 last:border-r-0 flex flex-col"
                           >
-                            <span
-                              className="w-2.5 h-2.5 rounded-full flex-shrink-0"
-                              style={{ backgroundColor: c.color }}
-                            />
-                            <span className="font-medium">
-                              {c.subject} {c.number} {c.section}
-                            </span>
-                            <span className="text-gray-500">—</span>
-                            <span>{c.name}</span>
+                            {/* Day header */}
+                            <div className="h-10 bg-gray-900 border-b border-gray-700 flex items-center justify-center text-xs font-semibold text-gray-400">
+                              {day}
+                            </div>
+
+                            {/* Time blocks container */}
+                            <div className="flex-1 relative">
+                              {courses.flatMap((c, cIdx) =>
+                                c.times
+                                  .filter((t) => t.day === day)
+                                  .map((t, tIdx) => {
+                                    const toHour = (time) => {
+                                      const [h, m] = time.split(":").map(Number);
+                                      return h + m / 60;
+                                    };
+
+                                    const startHour = toHour(t.start);
+                                    const endHour = toHour(t.end);
+
+                                    // 8am–8pm = 12 hours
+                                    const startPct = Math.max(
+                                      0,
+                                      ((startHour - 8) / 12) * 100
+                                    );
+                                    const heightPct = Math.max(
+                                      6,
+                                      ((endHour - startHour) / 12) * 100
+                                    );
+
+                                    return (
+                                      <div
+                                        key={`${cIdx}-${tIdx}`}
+                                        className="absolute left-2 right-2 rounded-md text-white text-[10px] px-2 py-1 shadow-md overflow-hidden flex flex-col justify-center"
+                                        style={{
+                                          top: `${startPct}%`,
+                                          height: `${heightPct}%`,
+                                          backgroundColor: c.color,
+                                          minHeight: "22px",
+                                        }}
+                                      >
+                                        <div className="font-medium leading-none truncate">
+                                          {c.subject} {c.number}
+                                        </div>
+                                      </div>
+                                    );
+                                  })
+                              )}
+                            </div>
                           </div>
                         ))}
                       </div>
 
+                      {/* Course tags */}
+                      <div className="flex flex-wrap gap-2 flex-shrink-0">
+                        {courses.map((c, j) => (
+                          <span
+                            key={j}
+                            className="px-3 py-1 rounded text-xs font-medium text-white"
+                            style={{ backgroundColor: c.color }}
+                          >
+                            {c.subject} {c.number}
+                          </span>
+                        ))}
+                      </div>
                     </div>
                   </CarouselItem>
                 );
               })}
             </CarouselContent>
           </Carousel>
-
         </div>
 
-        {/* actions */}
-        <div className="flex justify-end gap-3 pt-3">
+        {/* Footer buttons */}
+        <div className="flex justify-end gap-3 px-8 py-5 border-t border-gray-800">
           <Button
             variant="outline"
             onClick={onClose}
-            className="border-gray-600 text-gray-300 hover:bg-gray-800"
+            className="border-gray-600 text-gray-300 hover:bg-gray-800 px-6"
           >
             Cancel
           </Button>
-
           <Button
             onClick={handleAccept}
-            className="bg-blue-600 hover:bg-blue-700 text-white"
+            className="bg-blue-600 hover:bg-blue-700 px-8"
           >
             Accept This Schedule
           </Button>

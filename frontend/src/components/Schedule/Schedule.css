@@ -28,10 +28,13 @@
 .day-column {
   position: relative;
   border-left: 1px solid #1e293b;
+  display: flex;
+  flex-direction: column;
 }
 
 .day-column-header {
   height: 40px;
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -41,6 +44,9 @@
 
 .day-column-body {
   position: relative;
+  /* 14 hours (8 AM–10 PM) × 60px per hour = 840px, matching TimeColumn */
+  height: 840px;
+  flex-shrink: 0;
 }
 
 .class-block {

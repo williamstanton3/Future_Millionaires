@@ -49,7 +49,6 @@ public class ScheduleController {
             ObjectNode node = db.mapper.createObjectNode()
                     .put("student_id",       STUDENT_ID)
                     .put("semester",         semester)
-                    .put("display_semester", semester)
                     .put("is_finalized",     false)
                     .put("credits",          0);
             db.post("/rest/v1/schedules", node.toString(), "resolution=ignore-duplicates");
@@ -90,7 +89,7 @@ public class ScheduleController {
             }
 
             String scheduleId = schedule.get("id").asText();
-            String semester   = schedule.get("display_semester").asText();
+            String semester   = schedule.get("semester").asText();
 
             // Find the course in CourseList
             Course toAdd = courseList.getCourses().stream()
@@ -188,7 +187,7 @@ public class ScheduleController {
             }
 
             String scheduleId = schedule.get("id").asText();
-            String semester   = schedule.get("display_semester").asText();
+            String semester   = schedule.get("semester").asText();
 
             // Look up course ID
             JsonNode courseRows = db.get("/rest/v1/courses?subject=eq." + subject
@@ -283,7 +282,7 @@ public class ScheduleController {
             }
 
             JsonNode rows = db.get("/rest/v1/schedules?student_id=eq." + STUDENT_ID
-                    + "&display_semester=eq." + semester
+                    + "&semester=eq." + semester
                     + "&is_finalized=eq.true&select=id");
 
             if (rows.size() == 0) {
@@ -308,7 +307,7 @@ public class ScheduleController {
 
             // Find the finalized schedule to copy from
             JsonNode savedRows = db.get("/rest/v1/schedules?student_id=eq." + STUDENT_ID
-                    + "&display_semester=eq." + semester
+                    + "&semester=eq." + semester
                     + "&is_finalized=eq.true&select=*");
 
             if (savedRows.size() == 0) {
@@ -335,7 +334,6 @@ public class ScheduleController {
             ObjectNode node = db.mapper.createObjectNode()
                     .put("student_id",       STUDENT_ID)
                     .put("semester",         semester)
-                    .put("display_semester", semester)
                     .put("is_finalized",     false)
                     .put("credits",          savedRows.get(0).get("credits").asInt());
 
@@ -432,9 +430,7 @@ public class ScheduleController {
     private Map<String, Object> buildSavedSchedulesMap(JsonNode rows) throws Exception {
         Map<String, Object> map = new java.util.LinkedHashMap<>();
         for (JsonNode row : rows) {
-            String key = row.has("display_semester") && !row.get("display_semester").isNull()
-                    ? row.get("display_semester").asText()
-                    : row.get("semester").asText();
+            String key = row.get("semester").asText();
             String scheduleId = row.get("id").asText();
             List<Course> courses = loadCoursesForSchedule(scheduleId);
             map.put(key, Map.of(

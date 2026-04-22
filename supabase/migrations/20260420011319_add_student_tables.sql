@@ -7,14 +7,12 @@ create table schedules (
   id               uuid primary key default gen_random_uuid(),
   student_id       integer not null references students(id) on delete cascade,
   semester         text not null,
-  display_semester text not null, -- Added here
   is_finalized     boolean not null default false,
-  active_semester  boolean not null default false,
   credits          integer not null default 0,
   created_at       timestamptz default now(),
 
   -- Updated unique constraint to include display_semester
-  unique (student_id, semester, display_semester, is_finalized)
+  unique (student_id, semester, is_finalized)
 );
 
 create table schedule_courses (

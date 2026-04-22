@@ -184,16 +184,34 @@ export default function App() {
   };
 
   const handleConfirmLoad = async () => {
-      const { semester } = pendingLoad;
+      const { semester, courses } = pendingLoad;
       setPendingLoad(null);
 
       try {
           const result = await loadSavedSchedule(semester);
+          if (result.success) {
+              setActiveSemester(semester);
+              setCourses([]);
+              setSchedule(normalizeCourseList(result.courses ?? []));
+              return;
+          }
+      } catch (err) {
+          // fall through to JSON mode handling
+      }
+
+      // JSON mode fallback — load entirely on frontend
+      try {
+          await setSemester(semester);
+          await clearSchedule();
+
+          const normalized = normalizeCourseList(courses.schedule ?? []);
           setActiveSemester(semester);
           setCourses([]);
-          setSchedule(normalizeCourseList(result.courses ?? []));
+          setSchedule(normalized);
+
+          await Promise.all(normalized.map((course) => addCourseToBackend(course)));
       } catch (err) {
-          console.error("Failed to load schedule:", err);
+          console.error("Failed to load schedule in JSON mode:", err);
       }
   };
 

@@ -8,10 +8,13 @@ public class Main {
         // Set to true to use JSON file, false to use Supabase
         boolean useJson = true;
 
-        CourseList courseList = new CourseList();
+        RateMyProfApi rmpApi = new RateMyProfApi("U2Nob29sLTM4NA==");
+        CourseList courseList = new CourseList(rmpApi);
         Student student = useJson ? new Student(1) : null;
-        PersistenceManager persistence = useJson ? new PersistenceManager("student_data.json") : null;
         SupabaseClient db = useJson ? null : new SupabaseClient();
+
+        // Load persisted schedules from disk before starting the server
+        PersistenceManager persistence = useJson ? new PersistenceManager("student_data.json") : null;
 
         Javalin app = Javalin.create(config -> {
             config.bundledPlugins.enableCors(cors -> {
@@ -24,8 +27,8 @@ public class Main {
         if (useJson) {
             persistence.load(student);
         }
-
         new CourseController(app, courseList);
         new ScheduleController(app, courseList, student, persistence, db, useJson);
+        new EmailController(app);
     }
 }

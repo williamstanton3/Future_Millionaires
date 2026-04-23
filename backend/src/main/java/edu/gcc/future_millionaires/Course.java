@@ -1,5 +1,7 @@
 package edu.gcc.future_millionaires;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.util.List;
@@ -9,7 +11,7 @@ public class Course {
 
     private int credits;
 
-    private List<String> faculty;
+    private List<Professor> professors;
 
     @JsonProperty("is_lab")
     private boolean isLab;
@@ -28,7 +30,7 @@ public class Course {
     private String semester;
     private String subject;
 
-    private List<TimeSlot> times; // [{"day":"T","end_time":"16:45:00","start_time":"15:30:00"},{"day":"R","end_time":"16:45:00","start_time":"15:30:00"}]
+    private List<TimeSlot> times;
 
     @JsonProperty("total_seats")
     private int totalSeats;
@@ -36,7 +38,9 @@ public class Course {
     // Required empty constructor
     public Course() {}
 
+    // -------------------------
     // Getters and Setters
+    // -------------------------
 
     public int getCredits() {
         return credits;
@@ -46,12 +50,12 @@ public class Course {
         this.credits = credits;
     }
 
-    public List<String> getFaculty() {
-        return faculty;
+    public List<Professor> getProfessors() {
+        return professors;
     }
 
-    public void setFaculty(List<String> faculty) {
-        this.faculty = faculty;
+    public void setProfessors(List<Professor> professors) {
+        this.professors = professors;
     }
 
     public boolean isLab() {
@@ -141,6 +145,4 @@ public class Course {
     public void setTotalSeats(int totalSeats) {
         this.totalSeats = totalSeats;
     }
-
-
 }

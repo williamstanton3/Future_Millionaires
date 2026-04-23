@@ -16,6 +16,7 @@ public class Filter {
     private int credits; // 3
     private String keyword; // keyword search across course fields
 
+
     // Constructor
     public Filter() {
         department = null;
@@ -66,7 +67,9 @@ public class Filter {
             // loop through the list of professors given in the filter
             for (String prof : professors) {
                 // if the list of faculty for this given course contains the prof we are looking for, return true
-                if (course.getFaculty().stream().anyMatch(f -> f.toLowerCase().contains(prof.toLowerCase()))) {
+                if (course.getProfessors().stream()
+                        .anyMatch(p -> p.getName() != null &&
+                                p.getName().toLowerCase().contains(prof.toLowerCase()))) {
                     found = true;
                     break;
                 }
@@ -130,15 +133,15 @@ public class Filter {
                 }
 
                 // check if day matches JSON day field
-                boolean dayMatches = slot.getDay().equals(day);
+                boolean dayMatches = slot.getDay().contains(day);
 
                 // if start is null, user only filtered by day
                 boolean startMatches =
-                        (start == null) || slot.getStart_time().isAfter(start);
+                        (start == null) || !slot.getStart_time().isBefore(start);
 
                 // if end is null, user only filtered by day
                 boolean endMatches =
-                        (end == null) || slot.getEnd_time().isBefore(end);
+                        (end == null) || !slot.getEnd_time().isAfter(end);
 
                 // if all required conditions match
                 if (dayMatches && startMatches && endMatches) {
@@ -163,8 +166,7 @@ public class Filter {
                 || (course.getSection() != null && course.getSection().toLowerCase().contains(kw))
                 || (course.getLocation() != null && course.getLocation().toLowerCase().contains(kw))
                 || (course.getSemester() != null && course.getSemester().toLowerCase().contains(kw))
-                || (course.getFaculty() != null &&
-                course.getFaculty().stream().anyMatch(f -> f.toLowerCase().contains(kw)))
+                || (course.getProfessors() != null && course.getProfessors().stream().anyMatch(p -> p.getName() != null && p.getName().toLowerCase().contains(kw)))
                 || Integer.toString(course.getNumber()).contains(kw)) {
 
             return true;

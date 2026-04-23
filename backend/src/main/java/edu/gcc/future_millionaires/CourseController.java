@@ -94,8 +94,9 @@ public class CourseController {
                     .collect(Collectors.toList()));
 
             meta.put("professors", courses.stream()
-                    .flatMap(c -> c.getFaculty().stream())
-                    .filter(p -> p != null && !p.trim().isEmpty())
+                    .flatMap(c -> c.getProfessors().stream())
+                    .map(Professor::getName)
+                    .filter(n -> n != null && !n.trim().isEmpty())
                     .distinct()
                     .sorted()
                     .collect(Collectors.toList()));

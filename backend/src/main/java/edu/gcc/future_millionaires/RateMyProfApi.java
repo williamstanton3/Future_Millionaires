@@ -73,7 +73,7 @@ public class RateMyProfApi {
 
             if (edges.length() > 0) {
                 JSONObject node = edges.getJSONObject(0).getJSONObject("node");
-                System.out.println("✅ Found: " + node.getString("name") +
+                System.out.println("Found: " + node.getString("name") +
                         " | GraphQL ID: " + node.getString("id"));
                 return node.getString("id");
             }
@@ -145,7 +145,8 @@ public class RateMyProfApi {
                             node.getInt("numRatings"),
                             node.optDouble("avgRating", 0.0),
                             node.optDouble("avgDifficulty", 0.0),
-                            node.optString("department", "")
+                            node.optString("department", ""),
+                            node.optString("null")
                     );
 
                     professors.put(p.getLegacyId(), p);

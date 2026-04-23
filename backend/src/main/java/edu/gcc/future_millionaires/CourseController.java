@@ -37,7 +37,7 @@ public class CourseController {
             if (semester != null) filter.setSemester(semester);
 
             String creditsParam = ctx.queryParam("credits");
-            if (creditsParam != null) {
+            if (creditsParam != null && !creditsParam.trim().isEmpty()) {
                 try {
                     filter.setCredits(Integer.parseInt(creditsParam));
                 } catch (NumberFormatException e) {

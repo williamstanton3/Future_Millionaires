@@ -31,6 +31,7 @@ export default function FilterSection({
   const locked = !activeSemester;
 
   const handleApply = () => {
+      console.log("credits value:", credits, "type:", typeof credits);
     onFilter({
       semester: activeSemester,
       keyword,

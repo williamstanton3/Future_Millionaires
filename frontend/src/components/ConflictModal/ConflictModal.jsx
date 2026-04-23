@@ -12,7 +12,7 @@ import {
   CarouselNext,
 } from "@/components/ui/carousel";
 
-import "../Schedule/Schedule.css";   // ← updated path (one level up)
+import "../Schedule/Schedule.css";
 
 import ConflictTitle from "./ConflictTitle";
 import ConflictSchedule from "./ConflictSchedule";
@@ -37,7 +37,6 @@ function normalizeCourse(course) {
       const start = toStr(t.start_time ?? t.start);
       const end = toStr(t.end_time ?? t.end);
       const day = DAY_MAP[t.day] ?? t.day;
-
       if (!day || !start || !end) return null;
       return { day, start, end };
     })
@@ -52,8 +51,7 @@ function normalizeCourse(course) {
 
 function extractSchedule(s) {
   if (!s) return [];
-  const raw =
-    s.schedule ?? s.courses ?? s.getSchedule?.() ?? (Array.isArray(s) ? s : []);
+  const raw = s.schedule ?? s.courses ?? s.getSchedule?.() ?? (Array.isArray(s) ? s : []);
   return Array.isArray(raw) ? raw : [];
 }
 
@@ -75,11 +73,9 @@ export default function ConflictModal({
 
   useEffect(() => {
     if (!carouselApi) return;
-
     const update = () => setSelectedIdx(carouselApi.selectedScrollSnap());
     update();
     carouselApi.on("select", update);
-
     return () => carouselApi.off("select", update);
   }, [carouselApi]);
 
@@ -95,39 +91,35 @@ export default function ConflictModal({
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="!w-[65vw] !max-w-none h-[85vh] bg-gray-900 text-white border border-gray-700 p-0 flex flex-col overflow-hidden">
-        {/* Header */}
+      <DialogContent className="!w-[65vw] !max-w-none bg-gray-900 text-white border border-gray-700 p-0 flex flex-col" style={{ maxHeight: "90vh" }}>
+        {/* Header — fixed */}
         <ConflictTitle message={message} />
 
-        {/* Carousel Container */}
-        <div className="flex-1 flex flex-col min-h-0 px-8 py-0">
+        {/* Scrollable middle — schedule + course list */}
+        <div className="flex-1 overflow-y-auto px-8 py-4 min-h-0">
           <Carousel
             setApi={setCarouselApi}
             opts={{ loop: false, align: "start" }}
-            className="w-full flex-1 flex flex-col"
+            className="w-full"
           >
-            {/* NAVIGATION: Arrows right next to "1 of 8" */}
             <div className="flex items-center justify-center gap-4 mb-0 text-gray-400">
               <CarouselPrevious className="h-6 w-6" inline />
-
-              <span className="text-gray-300 text-base mt-1">
+              <span className="text-gray-300 text-base">
                 {selectedIdx + 1} of {total}
               </span>
-
               <CarouselNext className="h-6 w-6" inline />
             </div>
 
-            <CarouselContent className="flex-1 min-h-0">
+            <CarouselContent>
               {suggestedSchedules.map((suggestion, i) => {
                 const courses = extractSchedule(suggestion)
                   .map(normalizeCourse)
                   .filter(Boolean);
-
                 const credits = extractCredits(suggestion);
 
                 return (
-                  <CarouselItem key={i} className="h-full">
-                    <div className="flex flex-col h-full gap-2">
+                  <CarouselItem key={i}>
+                    <div className="flex flex-col gap-4">
                       <ConflictSchedule courses={courses} credits={credits} />
                       <ConflictCourseList courses={courses} />
                     </div>
@@ -138,8 +130,8 @@ export default function ConflictModal({
           </Carousel>
         </div>
 
-        {/* Footer buttons */}
-        <div className="flex justify-end gap-3 px-8 py-5 border-t border-gray-800">
+        {/* Footer — fixed at bottom */}
+        <div className="flex-shrink-0 flex justify-end gap-3 px-8 py-5 border-t border-gray-800">
           <Button
             variant="outline"
             onClick={onClose}

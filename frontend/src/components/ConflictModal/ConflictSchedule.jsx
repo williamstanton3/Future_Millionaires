@@ -2,10 +2,23 @@ import React from "react";
 
 const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri"];
 
+const hexToRgb = (hex) => {
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  return `${r},${g},${b}`;
+};
+
 export default function ConflictSchedule({ courses, credits }) {
   const toHour = (time) => {
     const [h, m] = time.split(":").map(Number);
     return h + m / 60;
+  };
+
+  const formatHour = (hour) => {
+    const ampm = hour < 12 ? "AM" : "PM";
+    const display = hour % 12 === 0 ? 12 : hour % 12;
+    return `${display}:00 ${ampm}`;
   };
 
   return (
@@ -18,17 +31,17 @@ export default function ConflictSchedule({ courses, credits }) {
       {/* SCHEDULE GRID */}
       <div className="h-[50vh] border border-gray-700 rounded-xl bg-gray-950 overflow-hidden grid grid-cols-[70px_repeat(5,1fr)]">
         {/* Time labels */}
-        <div className="border-r border-gray-700 flex flex-col text-[10px] text-gray-500 relative">
+        <div className="border-r border-gray-700 flex flex-col text-[12px] text-gray-500">
+          {/* Spacer matching the h-7 day column header */}
+          <div className="h-7 flex-shrink-0 border-b border-gray-700" />
           {Array.from({ length: 13 }, (_, i) => {
             const hour = 8 + i;
             return (
               <div
                 key={i}
-                className="flex-1 flex items-start justify-end pr-2 border-b border-gray-800 last:border-b-0"
+                className="flex-1 flex items-center justify-center pr-2 border-b border-gray-800 last:border-b-0"
               >
-                <span className="translate-y-[-4px]">
-                  {hour}:00
-                </span>
+                {formatHour(hour)}
               </div>
             );
           })}
@@ -58,15 +71,16 @@ export default function ConflictSchedule({ courses, credits }) {
                     return (
                       <div
                         key={`${cIdx}-${tIdx}`}
-                        className="absolute left-2 right-2 rounded-md text-white text-[10px] px-2 py-1 shadow-md overflow-hidden flex flex-col justify-center"
+                        className="absolute left-2 right-2 rounded-md text-white text-[12px] px-2 py-1 overflow-hidden flex flex-col justify-center"
                         style={{
                           top: `${startPct}%`,
                           height: `${heightPct}%`,
-                          backgroundColor: c.color,
+                          backgroundColor: `rgba(${hexToRgb(c.color)}, 0.18)`,
+                          borderLeft: `3px solid ${c.color}`,
                           minHeight: "22px",
                         }}
                       >
-                        <div className="font-medium leading-none truncate">
+                        <div className="font-medium leading-none truncate" style={{ color: c.color }}>
                           {c.subject} {c.number}
                         </div>
                       </div>

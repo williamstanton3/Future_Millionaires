@@ -7,7 +7,7 @@ import {
 
 export default function ConflictTitle({ message }) {
   return (
-    <DialogHeader className="px-8 pt-6 pb-4 border-b border-gray-800">
+    <DialogHeader className="px-8 pt-6 border-b border-gray-800">
       <DialogTitle className="text-red-400 text-2xl">
         Time Conflict Detected
       </DialogTitle>

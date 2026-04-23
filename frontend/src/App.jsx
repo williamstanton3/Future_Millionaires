@@ -128,10 +128,14 @@ export default function App() {
 
     if (result.success === false) {
       if (result.suggestedSchedules?.length > 0) {
-        // Time conflict with suggestions — show the conflict modal
+        // Normalize each suggested schedule so courses have colors + clean times
+        const normalized = result.suggestedSchedules.map((s) => ({
+          ...s,
+          schedule: normalizeCourseList(s.schedule ?? s.courses ?? []),
+        }));
         setConflictData({
           message: result.message,
-          suggestedSchedules: result.suggestedSchedules,
+          suggestedSchedules: normalized,
         });
       }
       throw new Error(result.message || "Failed to add course.");

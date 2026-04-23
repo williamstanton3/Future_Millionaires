@@ -23,7 +23,7 @@ public class Filter {
         professors = null;
         times = null;
         semester = null;
-        credits = 0;
+        credits = -1; // represents null
         keyword = null;
     }
 
@@ -83,7 +83,7 @@ public class Filter {
             return false;
 
         // credits filter
-        if (credits > 0 && credits != course.getCredits())
+        if (credits >= 0 && credits != course.getCredits())
             return false;
 
         // times filter (delegated to helper function)

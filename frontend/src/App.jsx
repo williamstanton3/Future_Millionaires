@@ -14,7 +14,6 @@ import {
 } from "./api/ScheduleApi";
 import CourseList from "./components/Courses/CourseList";
 import ConflictModal from "./components/ConflictModal/ConflictModal";
-import SavedSchedules from "./components/Schedule/SavedSchedules";
 import { Button } from "./components/ui/button";
 import {
   Dialog,
@@ -66,7 +65,6 @@ export default function App() {
         : [],
     }));
 
-  // Tell the backend which semester is active, then restore whatever live schedule is there.
   const handleSemesterChange = async (semester) => {
     setActiveSemester(semester);
     setCourses([]);
@@ -113,7 +111,6 @@ export default function App() {
     return false;
   };
 
-  // Adds to frontend state and immediately syncs to the backend live schedule.
   const handleAddCourse = async (course) => {
     const normalizedTimes = Array.isArray(course.times)
       ? course.times.map((t) => ({
@@ -128,7 +125,6 @@ export default function App() {
 
     if (result.success === false) {
       if (result.suggestedSchedules?.length > 0) {
-        // Normalize each suggested schedule so courses have colors + clean times
         const normalized = result.suggestedSchedules.map((s) => ({
           ...s,
           schedule: normalizeCourseList(s.schedule ?? s.courses ?? []),
@@ -151,7 +147,6 @@ export default function App() {
     ]);
   };
 
-  // Accepts a suggested alternative schedule after a time conflict.
   const handleAcceptSuggestion = async (suggestedSchedule) => {
     try {
       await clearSchedule();
@@ -166,7 +161,6 @@ export default function App() {
     }
   };
 
-  // Removes from frontend state and immediately syncs to the backend live schedule.
   const handleRemoveCourse = async (course) => {
     await removeCourseFromBackend(course);
     setSchedule((prev) =>
@@ -179,8 +173,6 @@ export default function App() {
     );
   };
 
-  // Finalizes the active schedule on the backend (archives it, clears the live slot),
-  // then resets the frontend to a blank state.
   const handleSaveSchedule = async () => {
     if (schedule.length === 0 || !activeSemester) return;
     setSaveStatus("saving");
@@ -203,35 +195,35 @@ export default function App() {
     }
   };
 
-  const handleRequestLoad = (semester, courses) => {
-    setPendingLoad({ semester, courses });
+  const handleRequestLoad = (semester, schedule) => {
+    setPendingLoad({ semester, courses: schedule });
   };
 
   const handleConfirmLoad = async () => {
-      const { semester, courses } = pendingLoad;
-      setPendingLoad(null);
-      setActiveSemester(semester);
-      setCourses([]);
+    const { semester, courses } = pendingLoad;
+    setPendingLoad(null);
+    setActiveSemester(semester);
+    setCourses([]);
 
-      const normalized = normalizeCourseList(courses.schedule ?? []);
-      setSchedule(normalized);
+    const normalized = normalizeCourseList(courses.schedule ?? []);
+    setSchedule(normalized);
 
-      try {
-          await setSemester(semester);  // sets active semester, creates blank if needed
-          await clearSchedule();        // wipe whatever was there
-          await Promise.all(normalized.map((course) => addCourseToBackend(course)));
-      } catch (err) {
-          console.error("Failed to sync loaded schedule to backend:", err);
-      }
+    try {
+      await setSemester(semester);
+      await clearSchedule();
+      await Promise.all(normalized.map((course) => addCourseToBackend(course)));
+    } catch (err) {
+      console.error("Failed to sync loaded schedule to backend:", err);
+    }
   };
 
   const handleDeleteSaved = async (semester) => {
-      await deleteSavedSchedule(semester);
-      setSavedSchedules((prev) => {
-          const next = { ...prev };
-          delete next[semester];
-          return next;
-      });
+    await deleteSavedSchedule(semester);
+    setSavedSchedules((prev) => {
+      const next = { ...prev };
+      delete next[semester];
+      return next;
+    });
   };
 
   return (
@@ -265,9 +257,14 @@ export default function App() {
         )}
       </div>
 
-      <WeeklySchedule courses={schedule} onRemoveCourse={handleRemoveCourse} />
-
-      <SavedSchedules schedules={savedSchedules} onLoad={handleRequestLoad} onDelete={handleDeleteSaved} />
+      {/* WeeklySchedule now owns the saved schedules sidebar */}
+      <WeeklySchedule
+        courses={schedule}
+        onRemoveCourse={handleRemoveCourse}
+        savedSchedules={savedSchedules}
+        onLoadSchedule={handleRequestLoad}
+        onDeleteSchedule={handleDeleteSaved}
+      />
 
       <ConflictModal
         open={!!conflictData}

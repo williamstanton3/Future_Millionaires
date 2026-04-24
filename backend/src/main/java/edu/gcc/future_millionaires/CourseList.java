@@ -162,6 +162,16 @@ public class CourseList {
         return (first + " " + last).toLowerCase();
     }
 
+    public Course findCourse(String subject, int number, String section, String semester) {
+        return courses.stream()
+                .filter(c -> c.getSubject().equals(subject)
+                        && c.getNumber() == number
+                        && c.getSection().equals(section)
+                        && c.getSemester().equals(semester))
+                .findFirst()
+                .orElse(null);
+    }
+
     public List<Course> getCourses() {
         return courses;
     }

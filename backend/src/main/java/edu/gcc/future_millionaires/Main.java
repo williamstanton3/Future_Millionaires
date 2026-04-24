@@ -11,7 +11,7 @@ public class Main {
 
         // Load persisted schedules from disk before starting the server
         PersistenceManager persistence = new PersistenceManager("student_data.json");
-        persistence.load(student);
+        persistence.load(student, courseList);
 
         Javalin app = Javalin.create(config -> {
             config.bundledPlugins.enableCors(cors -> {

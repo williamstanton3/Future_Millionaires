@@ -6,7 +6,9 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -19,6 +21,7 @@ import java.util.Map;
  *   "savedSchedules": { "2024_Spring": { ... }, ... }  // finalized / archived
  * }
  */
+
 public class PersistenceManager {
 
     private final File file;
@@ -35,28 +38,34 @@ public class PersistenceManager {
     // Load
     // -------------------------------------------------------------------------
 
-    /**
-     * Reads persisted data and populates the student's two schedule maps.
-     * If the file doesn't exist yet, the maps are left empty (first run).
-     */
-    public void load(Student student) {
+    public void load(Student student, CourseList courseList) {
         if (!file.exists()) return;
 
         try {
             StudentData data = mapper.readValue(file, StudentData.class);
 
             if (data.schedules != null) {
-                data.schedules.forEach((semester, schedule) -> {
+                data.schedules.forEach((semester, scheduleData) -> {
+                    Schedule schedule = new Schedule(student.getStudentID(), semester);
+                    for (CourseRef ref : scheduleData.courses) {
+                        Course course = courseList.findCourse(ref.subject, ref.number, ref.section, ref.semester);
+                        if (course != null) schedule.addCourse(course);
+                    }
                     student.getSchedules().put(semester, schedule);
                 });
             }
+
             if (data.savedSchedules != null) {
-                data.savedSchedules.forEach((semester, schedule) -> {
+                data.savedSchedules.forEach((semester, scheduleData) -> {
+                    Schedule schedule = new Schedule(student.getStudentID(), semester);
+                    for (CourseRef ref : scheduleData.courses) {
+                        Course course = courseList.findCourse(ref.subject, ref.number, ref.section, ref.semester);
+                        if (course != null) schedule.addCourse(course);
+                    }
                     student.getSavedSchedules().put(semester, schedule);
                 });
             }
 
-            // Restore active semester if there is exactly one in-progress schedule
             if (data.activeSemester != null) {
                 student.restoreActiveSemester(data.activeSemester);
             }
@@ -71,15 +80,27 @@ public class PersistenceManager {
     // Save
     // -------------------------------------------------------------------------
 
-    /**
-     * Writes the student's current state to disk. Call this after every mutation.
-     */
     public void save(Student student) {
         try {
             StudentData data = new StudentData();
             data.activeSemester = student.getActiveSemester();
-            data.schedules = student.getSchedules();
-            data.savedSchedules = student.getSavedSchedules();
+
+            student.getSchedules().forEach((semester, schedule) -> {
+                ScheduleData sd = new ScheduleData();
+                for (Course c : schedule.getSchedule()) {
+                    sd.courses.add(new CourseRef(c.getSubject(), c.getNumber(), c.getSection(), c.getSemester()));
+                }
+                data.schedules.put(semester, sd);
+            });
+
+            student.getSavedSchedules().forEach((semester, schedule) -> {
+                ScheduleData sd = new ScheduleData();
+                for (Course c : schedule.getSchedule()) {
+                    sd.courses.add(new CourseRef(c.getSubject(), c.getNumber(), c.getSection(), c.getSemester()));
+                }
+                data.savedSchedules.put(semester, sd);
+            });
+
             mapper.writerWithDefaultPrettyPrinter().writeValue(file, data);
         } catch (IOException e) {
             System.err.println("Warning: could not save student data to " + file.getPath());
@@ -88,12 +109,32 @@ public class PersistenceManager {
     }
 
     // -------------------------------------------------------------------------
-    // DTO used for the root JSON object
+    // DTOs
     // -------------------------------------------------------------------------
 
     public static class StudentData {
         public String activeSemester;
-        public Map<String, Schedule> schedules = new HashMap<>();
-        public Map<String, Schedule> savedSchedules = new HashMap<>();
+        public Map<String, ScheduleData> schedules = new HashMap<>();
+        public Map<String, ScheduleData> savedSchedules = new HashMap<>();
+    }
+
+    public static class ScheduleData {
+        public List<CourseRef> courses = new ArrayList<>();
+    }
+
+    public static class CourseRef {
+        public String subject;
+        public int number;
+        public String section;
+        public String semester;
+
+        public CourseRef() {}
+
+        public CourseRef(String subject, int number, String section, String semester) {
+            this.subject = subject;
+            this.number = number;
+            this.section = section;
+            this.semester = semester;
+        }
     }
 }

@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 import TimeColumn from "./TimeColumn";
 import DayColumn from "./DayColumn";
+import SavedSchedulesSidebar from "./SavedSchedulesSidebar";
 import "./Schedule.css";
 import {
   Dialog,
@@ -15,14 +16,12 @@ import { Button } from "@/components/ui/button";
 const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri"];
 
 const formatTime = (timeValue) => {
-  // Normalized string from frontend state e.g. "09:30"
   if (typeof timeValue === "string") {
     const [hour, min] = timeValue.split(":").map(Number);
     const h = hour % 12 === 0 ? 12 : hour % 12;
     const ampm = hour < 12 ? "AM" : "PM";
     return `${h}:${String(min).padStart(2, "0")} ${ampm}`;
   }
-  // Raw array from backend e.g. [9, 30]
   if (Array.isArray(timeValue)) {
     const [hour, min] = timeValue;
     const h = hour % 12 === 0 ? 12 : hour % 12;
@@ -40,7 +39,13 @@ const formatSemester = (semester) => {
   return `${term} ${year}`;
 };
 
-export default function WeeklySchedule({ courses, onRemoveCourse }) {
+export default function WeeklySchedule({
+  courses,
+  onRemoveCourse,
+  savedSchedules = {},
+  onLoadSchedule,
+  onDeleteSchedule,
+}) {
   const [selected, setSelected] = useState(null);
 
   const handleRemove = () => {
@@ -55,18 +60,28 @@ export default function WeeklySchedule({ courses, onRemoveCourse }) {
         <h1 className="planner-title">Schedule Planner</h1>
       </div>
 
-      <div className="schedule-wrapper">
-        <div className="schedule">
-          <TimeColumn />
-          {DAYS.map((day) => (
-            <DayColumn
-              key={day}
-              day={day}
-              courses={courses}
-              onCourseClick={setSelected}
-            />
-          ))}
+      <div className="flex gap-4 items-start">
+        {/* Weekly grid */}
+        <div className="schedule-wrapper flex-1 min-w-0">
+          <div className="schedule">
+            <TimeColumn />
+            {DAYS.map((day) => (
+              <DayColumn
+                key={day}
+                day={day}
+                courses={courses}
+                onCourseClick={setSelected}
+              />
+            ))}
+          </div>
         </div>
+
+        {/* Saved schedules sidebar */}
+        <SavedSchedulesSidebar
+          savedSchedules={savedSchedules}
+          onLoad={onLoadSchedule}
+          onDelete={onDeleteSchedule}
+        />
       </div>
 
       {/* Course detail + remove dialog */}

@@ -91,24 +91,49 @@ export default function WeeklySchedule({
             <DialogTitle>
               {selected?.subject} {selected?.number} {selected?.section} — {selected?.name}
             </DialogTitle>
-            <DialogDescription>
-              <div className="mt-2 text-sm">Professor: {selected?.faculty}</div>
-              <div className="text-sm">Semester: {formatSemester(selected?.semester)}</div>
-              <div className="text-sm">Credits: {selected?.credits}</div>
-              <div className="text-sm">Location: {selected?.location}</div>
-              <div className="text-sm">Open Seats: {selected?.open_seats}</div>
-              <div className="text-sm">Total Seats: {selected?.total_seats}</div>
-
-              <div className="mt-2 text-sm font-semibold">Meetings:</div>
-              {selected?.times.map((m, i) => (
-                <div key={i} className="text-sm">
-                  {m.day} {formatTime(m.start)} – {formatTime(m.end)}
+            <DialogDescription asChild>
+              <div className="text-sm text-muted-foreground">
+                <div className="mt-3 space-y-3">
+                  {(selected?.professors || []).map((prof, i) => (
+                    <div key={i} className="flex items-center gap-3">
+                      <img
+                        src={prof.imageUrl || "/default-prof.png"}
+                        alt={prof.name}
+                        className="w-16 h-16 rounded-full object-cover flex-shrink-0"
+                      />
+                      <div>
+                        <div className="font-medium">{prof.name}</div>
+                        <div className="flex items-center gap-2 mt-1 text-xs">
+                          <span className="bg-blue-700 text-white px-2 py-0.5 rounded font-bold">
+                            {prof.overallRating > 0 ? prof.overallRating.toFixed(1) : "N/A"}
+                          </span>
+                          <span className="text-gray-400">Rating</span>
+                          <span className="bg-orange-700 text-white px-2 py-0.5 rounded font-bold ml-2">
+                            {prof.avgDifficulty > 0 ? prof.avgDifficulty.toFixed(1) : "N/A"}
+                          </span>
+                          <span className="text-gray-400">Difficulty</span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              ))}
+                <div className="text-sm">Semester: {formatSemester(selected?.semester)}</div>
+                <div className="text-sm">Credits: {selected?.credits}</div>
+                <div className="text-sm">Location: {selected?.location}</div>
+                <div className="text-sm">Open Seats: {selected?.open_seats}</div>
+                <div className="text-sm">Total Seats: {selected?.total_seats}</div>
 
-              {selected?.description && (
-                <div className="mt-2 text-sm">{selected.description}</div>
-              )}
+                <div className="mt-2 text-sm font-semibold">Meetings:</div>
+                {selected?.times.map((m, i) => (
+                  <div key={i} className="text-sm">
+                    {m.day} {formatTime(m.start)} – {formatTime(m.end)}
+                  </div>
+                ))}
+
+                {selected?.description && (
+                  <div className="mt-2 text-sm">{selected.description}</div>
+                )}
+              </div>
             </DialogDescription>
           </DialogHeader>
 

@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 import TimeColumn from "./TimeColumn";
 import DayColumn from "./DayColumn";
+import SavedSchedulesSidebar from "./SavedSchedulesSidebar";
 import "./Schedule.css";
 import {
   Dialog,
@@ -15,14 +16,12 @@ import { Button } from "@/components/ui/button";
 const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri"];
 
 const formatTime = (timeValue) => {
-  // Normalized string from frontend state e.g. "09:30"
   if (typeof timeValue === "string") {
     const [hour, min] = timeValue.split(":").map(Number);
     const h = hour % 12 === 0 ? 12 : hour % 12;
     const ampm = hour < 12 ? "AM" : "PM";
     return `${h}:${String(min).padStart(2, "0")} ${ampm}`;
   }
-  // Raw array from backend e.g. [9, 30]
   if (Array.isArray(timeValue)) {
     const [hour, min] = timeValue;
     const h = hour % 12 === 0 ? 12 : hour % 12;
@@ -40,7 +39,13 @@ const formatSemester = (semester) => {
   return `${term} ${year}`;
 };
 
-export default function WeeklySchedule({ courses, onRemoveCourse }) {
+export default function WeeklySchedule({
+  courses,
+  onRemoveCourse,
+  savedSchedules = {},
+  onLoadSchedule,
+  onDeleteSchedule,
+}) {
   const [selected, setSelected] = useState(null);
 
   const handleRemove = () => {
@@ -55,18 +60,28 @@ export default function WeeklySchedule({ courses, onRemoveCourse }) {
         <h1 className="planner-title">Schedule Planner</h1>
       </div>
 
-      <div className="schedule-wrapper">
-        <div className="schedule">
-          <TimeColumn />
-          {DAYS.map((day) => (
-            <DayColumn
-              key={day}
-              day={day}
-              courses={courses}
-              onCourseClick={setSelected}
-            />
-          ))}
+      <div className="flex gap-4 items-start">
+        {/* Weekly grid */}
+        <div className="schedule-wrapper flex-1 min-w-0">
+          <div className="schedule">
+            <TimeColumn />
+            {DAYS.map((day) => (
+              <DayColumn
+                key={day}
+                day={day}
+                courses={courses}
+                onCourseClick={setSelected}
+              />
+            ))}
+          </div>
         </div>
+
+        {/* Saved schedules sidebar */}
+        <SavedSchedulesSidebar
+          savedSchedules={savedSchedules}
+          onLoad={onLoadSchedule}
+          onDelete={onDeleteSchedule}
+        />
       </div>
 
       {/* Course detail + remove dialog */}
@@ -76,24 +91,49 @@ export default function WeeklySchedule({ courses, onRemoveCourse }) {
             <DialogTitle>
               {selected?.subject} {selected?.number} {selected?.section} — {selected?.name}
             </DialogTitle>
-            <DialogDescription>
-              <div className="mt-2 text-sm">Professor: {selected?.faculty}</div>
-              <div className="text-sm">Semester: {formatSemester(selected?.semester)}</div>
-              <div className="text-sm">Credits: {selected?.credits}</div>
-              <div className="text-sm">Location: {selected?.location}</div>
-              <div className="text-sm">Open Seats: {selected?.open_seats}</div>
-              <div className="text-sm">Total Seats: {selected?.total_seats}</div>
-
-              <div className="mt-2 text-sm font-semibold">Meetings:</div>
-              {selected?.times.map((m, i) => (
-                <div key={i} className="text-sm">
-                  {m.day} {formatTime(m.start)} – {formatTime(m.end)}
+            <DialogDescription asChild>
+              <div className="text-sm text-muted-foreground">
+                <div className="mt-3 space-y-3">
+                  {(selected?.professors || []).map((prof, i) => (
+                    <div key={i} className="flex items-center gap-3">
+                      <img
+                        src={prof.imageUrl || "/default-prof.png"}
+                        alt={prof.name}
+                        className="w-16 h-16 rounded-full object-cover flex-shrink-0"
+                      />
+                      <div>
+                        <div className="font-medium">{prof.name}</div>
+                        <div className="flex items-center gap-2 mt-1 text-xs">
+                          <span className="bg-blue-700 text-white px-2 py-0.5 rounded font-bold">
+                            {prof.overallRating > 0 ? prof.overallRating.toFixed(1) : "N/A"}
+                          </span>
+                          <span className="text-gray-400">Rating</span>
+                          <span className="bg-orange-700 text-white px-2 py-0.5 rounded font-bold ml-2">
+                            {prof.avgDifficulty > 0 ? prof.avgDifficulty.toFixed(1) : "N/A"}
+                          </span>
+                          <span className="text-gray-400">Difficulty</span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              ))}
+                <div className="text-sm">Semester: {formatSemester(selected?.semester)}</div>
+                <div className="text-sm">Credits: {selected?.credits}</div>
+                <div className="text-sm">Location: {selected?.location}</div>
+                <div className="text-sm">Open Seats: {selected?.open_seats}</div>
+                <div className="text-sm">Total Seats: {selected?.total_seats}</div>
 
-              {selected?.description && (
-                <div className="mt-2 text-sm">{selected.description}</div>
-              )}
+                <div className="mt-2 text-sm font-semibold">Meetings:</div>
+                {selected?.times.map((m, i) => (
+                  <div key={i} className="text-sm">
+                    {m.day} {formatTime(m.start)} – {formatTime(m.end)}
+                  </div>
+                ))}
+
+                {selected?.description && (
+                  <div className="mt-2 text-sm">{selected.description}</div>
+                )}
+              </div>
             </DialogDescription>
           </DialogHeader>
 

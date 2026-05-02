@@ -12,8 +12,7 @@ import { Button } from "@/components/ui/button";
 
 export default function CourseCard({ course, onAddCourse }) {
   const [detailOpen, setDetailOpen] = useState(false);
-  const [statusOpen, setStatusOpen] = useState(false);
-  const [addSuccess, setAddSuccess] = useState(null);
+  const [toast, setToast] = useState(null); // { type: "success" | "error", msg: string }
   const [errorMsg, setErrorMsg] = useState("");
 
   const [imageOpen, setImageOpen] = useState(false);
@@ -37,19 +36,22 @@ export default function CourseCard({ course, onAddCourse }) {
     return `${term} ${year}`;
   };
 
+  const showToast = (type, msg) => {
+    setToast({ type, msg });
+    setTimeout(() => setToast(null), 3000);
+  };
+
   const handleAdd = async () => {
     try {
       await onAddCourse(course);
-      setAddSuccess(true);
       setErrorMsg("");
       setDetailOpen(false);
-      setStatusOpen(true);
+      showToast("success", `${course.subject} ${course.number} added to schedule.`);
     } catch (e) {
       const isConflict = e.message?.toLowerCase().includes("conflict");
-      setAddSuccess(false);
       setErrorMsg(e.message || "Something went wrong. Please try again.");
       setDetailOpen(false);
-      if (!isConflict) setStatusOpen(true);
+      if (!isConflict) showToast("error", e.message || "Could not add course.");
     }
   };
 
@@ -194,29 +196,17 @@ export default function CourseCard({ course, onAddCourse }) {
         </DialogContent>
       </Dialog>
 
-      {/* STATUS MODAL */}
-      <Dialog open={statusOpen} onOpenChange={setStatusOpen}>
-        <DialogContent className="max-w-sm text-center">
-          <DialogHeader>
-            <DialogTitle className={addSuccess ? "text-green-400" : "text-red-400"}>
-              {addSuccess ? "✓ Course Added!" : "✗ Could Not Add Course"}
-            </DialogTitle>
-            <DialogDescription>
-              {addSuccess
-                ? `${course.subject} ${course.number} added successfully.`
-                : errorMsg}
-            </DialogDescription>
-          </DialogHeader>
-          <Button
-            className={`mt-4 w-full ${
-              addSuccess ? "bg-green-600 hover:bg-green-700" : "bg-red-600 hover:bg-red-700"
-            }`}
-            onClick={() => setStatusOpen(false)}
-          >
-            OK
-          </Button>
-        </DialogContent>
-      </Dialog>
+      {/* TOAST NOTIFICATION */}
+      {toast && (
+        <div
+          className={`fixed top-5 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 px-5 py-3 rounded-lg shadow-lg text-white text-sm font-medium transition-all animate-in fade-in slide-in-from-top-2 ${
+            toast.type === "success" ? "bg-green-600" : "bg-red-600"
+          }`}
+        >
+          <span>{toast.type === "success" ? "✓" : "✗"}</span>
+          <span>{toast.msg}</span>
+        </div>
+      )}
     </>
   );
 }

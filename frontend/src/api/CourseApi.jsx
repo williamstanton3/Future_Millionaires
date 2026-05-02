@@ -19,7 +19,10 @@ export async function fetchCourses(filters) {
   if (filters.course_number) params.append("number", filters.course_number);
   if (filters.professor) params.append("professors", filters.professor);
   if (filters.semester) params.append("semester", filters.semester);
-  if (filters.credits) params.append("credits", filters.credits);
+  if (filters.credits != null) {
+    if (filters.credits === 0) return [];
+    params.append("credits", filters.credits)
+  }
 
   const daysToSearch =
     filters.days?.length > 0

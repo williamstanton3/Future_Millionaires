@@ -31,6 +31,7 @@ export default function FilterSection({
   const locked = !activeSemester;
 
   const handleApply = () => {
+      console.log("credits value:", credits, "type:", typeof credits);
     onFilter({
       semester: activeSemester,
       keyword,
@@ -55,10 +56,10 @@ export default function FilterSection({
         />
       </div>
 
-      {/* Row 2: Filters */}
+      {/* Row 2: Filters + Row 3: Apply Button */}
       <div className={locked ? "opacity-40 pointer-events-none select-none" : ""}>
+        {/* Filters row */}
         <div className="flex flex-wrap gap-4 items-end">
-
           <div className="w-48">
             <KeywordInput keyword={keyword} onChange={setKeyword} />
           </div>
@@ -95,7 +96,7 @@ export default function FilterSection({
             />
           </div>
 
-          <div className="w-60">
+          <div className="flex-shrink-0">
             <DayTimeFilter
               selectedDays={selectedDays}
               setSelectedDays={setSelectedDays}
@@ -105,16 +106,16 @@ export default function FilterSection({
               onEndTimeChange={setEndTime}
             />
           </div>
+        </div>
 
-          <div className="ml-auto">
-            <Button
-              onClick={handleApply}
-              className="bg-blue-600 hover:bg-blue-700 text-white w-32"
-            >
-              Apply
-            </Button>
-          </div>
-
+        {/* New row: Apply button (left-justified) */}
+        <div className="mt-6 flex justify-start">
+          <Button
+            onClick={handleApply}
+            className="bg-blue-600 hover:bg-blue-700 text-white w-32"
+          >
+            Apply
+          </Button>
         </div>
       </div>
     </>

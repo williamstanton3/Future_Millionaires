@@ -53,12 +53,12 @@ export default function DayTimeFilter({
       <div className="flex gap-2 items-center">
         <span className="text-sm text-gray-400">Time:</span>
 
-        <div className="w-full">
+
           <Select
             value={startTime}
             onValueChange={(val) => onStartTimeChange(val === "all" ? "" : val)}
           >
-            <SelectTrigger className="w-32">
+            <SelectTrigger className="w-28">
               <SelectValue placeholder="Start" />
             </SelectTrigger>
             <SelectContent>
@@ -70,16 +70,15 @@ export default function DayTimeFilter({
               ))}
             </SelectContent>
           </Select>
-        </div>
+
 
         <span className="text-gray-400">-</span>
 
-        <div className="w-full">
           <Select
             value={endTime}
             onValueChange={(val) => onEndTimeChange(val === "all" ? "" : val)}
           >
-            <SelectTrigger className="w-32">
+            <SelectTrigger className="w-28">
               <SelectValue placeholder="End" />
             </SelectTrigger>
             <SelectContent>
@@ -91,7 +90,7 @@ export default function DayTimeFilter({
               ))}
             </SelectContent>
           </Select>
-        </div>
+
       </div>
 
     </div>

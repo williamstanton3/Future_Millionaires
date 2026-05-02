@@ -25,7 +25,7 @@ public class Main {
         }).start(7070);
 
         if (useJson) {
-            persistence.load(student);
+            persistence.load(student, courseList);
         }
         new CourseController(app, courseList);
         new ScheduleController(app, courseList, student, persistence, db, useJson);

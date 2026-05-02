@@ -14,8 +14,7 @@ import {
   loadSavedSchedule
 } from "./api/ScheduleApi";
 import CourseList from "./components/Courses/CourseList";
-import ConflictModal from "./components/ConflictModal";
-import SavedSchedules from "./components/Schedule/SavedSchedules";
+import ConflictModal from "./components/ConflictModal/ConflictModal";
 import { Button } from "./components/ui/button";
 import {
   Dialog,
@@ -35,6 +34,7 @@ export default function App() {
 
   const [pendingLoad, setPendingLoad] = useState(null);
   const [conflictData, setConflictData] = useState(null);
+  const [showClearConfirm, setShowClearConfirm] = useState(false);
 
   const DAY_MAP = { M: "Mon", T: "Tue", W: "Wed", R: "Thu", F: "Fri" };
   const COLORS = ["#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6", "#ec4899"];
@@ -129,10 +129,13 @@ export default function App() {
 
     if (result.success === false) {
       if (result.suggestedSchedules?.length > 0) {
-        // Time conflict with suggestions — show the conflict modal
+        const normalized = result.suggestedSchedules.map((s) => ({
+          ...s,
+          schedule: normalizeCourseList(s.schedule ?? s.courses ?? []),
+        }));
         setConflictData({
           message: result.message,
-          suggestedSchedules: result.suggestedSchedules,
+          suggestedSchedules: normalized,
         });
       }
       throw new Error(result.message || "Failed to add course.");
@@ -176,8 +179,18 @@ export default function App() {
     );
   };
 
-  // Finalizes the active schedule on the backend (archives it, clears the live slot),
-  // then resets the frontend to a blank state.
+  const handleClearSchedule = async () => {
+    try {
+      await clearSchedule();
+      setSchedule([]);
+      setCourses([]);
+    } catch (err) {
+      console.error("Failed to clear schedule:", err);
+    } finally {
+      setShowClearConfirm(false);
+    }
+  };
+
   const handleSaveSchedule = async () => {
     if (schedule.length === 0 || !activeSemester) return;
     setSaveStatus("saving");
@@ -200,8 +213,8 @@ export default function App() {
     }
   };
 
-  const handleRequestLoad = (semester, courses) => {
-    setPendingLoad({ semester, courses });
+  const handleRequestLoad = (semester, schedule) => {
+    setPendingLoad({ semester, courses: schedule });
   };
 
   const handleConfirmLoad = async () => {
@@ -237,12 +250,12 @@ export default function App() {
   };
 
   const handleDeleteSaved = async (semester) => {
-      await deleteSavedSchedule(semester);
-      setSavedSchedules((prev) => {
-          const next = { ...prev };
-          delete next[semester];
-          return next;
-      });
+    await deleteSavedSchedule(semester);
+    setSavedSchedules((prev) => {
+      const next = { ...prev };
+      delete next[semester];
+      return next;
+    });
   };
 
   return (
@@ -268,6 +281,14 @@ export default function App() {
         >
           {saveStatus === "saving" ? "Saving..." : "Save Schedule"}
         </Button>
+        <Button
+          onClick={() => setShowClearConfirm(true)}
+          disabled={schedule.length === 0}
+          variant="outline"
+          className="border-red-500 text-red-400 hover:bg-red-950 hover:text-red-300"
+        >
+          Clear Schedule
+        </Button>
         {saveStatus === "success" && (
           <span className="text-green-400 text-sm">✓ Schedule saved!</span>
         )}
@@ -276,9 +297,14 @@ export default function App() {
         )}
       </div>
 
-      <WeeklySchedule courses={schedule} onRemoveCourse={handleRemoveCourse} />
-
-      <SavedSchedules schedules={savedSchedules} onLoad={handleRequestLoad} onDelete={handleDeleteSaved} />
+      {/* WeeklySchedule now owns the saved schedules sidebar */}
+      <WeeklySchedule
+        courses={schedule}
+        onRemoveCourse={handleRemoveCourse}
+        savedSchedules={savedSchedules}
+        onLoadSchedule={handleRequestLoad}
+        onDeleteSchedule={handleDeleteSaved}
+      />
 
       <ConflictModal
         open={!!conflictData}
@@ -308,6 +334,25 @@ export default function App() {
           </div>
         </DialogContent>
       </Dialog>
+      <Dialog open={showClearConfirm} onOpenChange={(open) => !open && setShowClearConfirm(false)}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Clear schedule?</DialogTitle>
+            <DialogDescription>
+              This will remove all {schedule.length} course{schedule.length !== 1 ? "s" : ""} from your current schedule. This cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-end gap-3 mt-4">
+            <Button variant="outline" onClick={() => setShowClearConfirm(false)}>
+              Cancel
+            </Button>
+            <Button className="bg-red-600 hover:bg-red-700 text-white" onClick={handleClearSchedule}>
+              Clear
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
     </div>
   );
 }

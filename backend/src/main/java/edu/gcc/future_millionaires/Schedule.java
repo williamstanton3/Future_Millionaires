@@ -79,9 +79,10 @@ public class Schedule {
         }
 
         for (Course existing : schedule) {
-            if (existing.getSubject().equals(newCourse.getSubject()) && existing.getNumber() == newCourse.getNumber()) {
+            if (existing.getSubject().equals(newCourse.getSubject())
+                    && existing.getNumber() == newCourse.getNumber()
+                    && existing.isLab() == newCourse.isLab()) {
                 userMessage = "Alternate section of this course is already added";
-                latestResult = Result.DUPLICATE;
                 return false;
             }
         }
@@ -124,7 +125,8 @@ public class Schedule {
             for (Course c : allCourses) {
                 if (c.getSubject().equals(courseToPick.getSubject()) &&
                         c.getNumber() == courseToPick.getNumber() &&
-                        c.getSemester().equals(semester)) {
+                        c.getSemester().equals(semester) &&
+                        c.isLab() == courseToPick.isLab()) {
                     sections.add(c);
                 }
             }

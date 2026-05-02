@@ -33,6 +33,7 @@ export default function App() {
 
   const [pendingLoad, setPendingLoad] = useState(null);
   const [conflictData, setConflictData] = useState(null);
+  const [showClearConfirm, setShowClearConfirm] = useState(false);
 
   const DAY_MAP = { M: "Mon", T: "Tue", W: "Wed", R: "Thu", F: "Fri" };
   const COLORS = ["#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6", "#ec4899"];
@@ -173,6 +174,18 @@ export default function App() {
     );
   };
 
+  const handleClearSchedule = async () => {
+    try {
+      await clearSchedule();
+      setSchedule([]);
+      setCourses([]);
+    } catch (err) {
+      console.error("Failed to clear schedule:", err);
+    } finally {
+      setShowClearConfirm(false);
+    }
+  };
+
   const handleSaveSchedule = async () => {
     if (schedule.length === 0 || !activeSemester) return;
     setSaveStatus("saving");
@@ -249,6 +262,14 @@ export default function App() {
         >
           {saveStatus === "saving" ? "Saving..." : "Save Schedule"}
         </Button>
+        <Button
+          onClick={() => setShowClearConfirm(true)}
+          disabled={schedule.length === 0}
+          variant="outline"
+          className="border-red-500 text-red-400 hover:bg-red-950 hover:text-red-300"
+        >
+          Clear Schedule
+        </Button>
         {saveStatus === "success" && (
           <span className="text-green-400 text-sm">✓ Schedule saved!</span>
         )}
@@ -294,6 +315,25 @@ export default function App() {
           </div>
         </DialogContent>
       </Dialog>
+      <Dialog open={showClearConfirm} onOpenChange={(open) => !open && setShowClearConfirm(false)}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Clear schedule?</DialogTitle>
+            <DialogDescription>
+              This will remove all {schedule.length} course{schedule.length !== 1 ? "s" : ""} from your current schedule. This cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-end gap-3 mt-4">
+            <Button variant="outline" onClick={() => setShowClearConfirm(false)}>
+              Cancel
+            </Button>
+            <Button className="bg-red-600 hover:bg-red-700 text-white" onClick={handleClearSchedule}>
+              Clear
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
     </div>
   );
 }

@@ -518,20 +518,14 @@ public class ScheduleController {
             JsonNode courseNode = row.get("courses");
             if (courseNode == null) continue;
 
-            Course course = db.mapper.treeToValue(courseNode, Course.class);
+            Course course = courseList.findCourse(
+                    courseNode.get("subject").asText(),
+                    courseNode.get("number").asInt(),
+                    courseNode.get("section").asText(),
+                    courseNode.get("semester").asText()
+            );
 
-            JsonNode slots = db.get("/rest/v1/time_slots?course_id=eq."
-                    + courseNode.get("id").asText() + "&select=*");
-
-            List<TimeSlot> timeSlots = new ArrayList<>();
-            for (JsonNode slot : slots) {
-                timeSlots.add(new TimeSlot(
-                        slot.get("day").asText(),
-                        LocalTime.parse(slot.get("start_time").asText()),
-                        LocalTime.parse(slot.get("end_time").asText())
-                ));
-            }
-            course.setTimes(timeSlots);
+            if (course == null) continue;
             courses.add(course);
         }
         return courses;

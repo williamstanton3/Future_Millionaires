@@ -49,3 +49,10 @@ export async function deleteSavedSchedule(semester) {
   });
   return res.json();
 }
+
+export async function loadSavedSchedule(semester) {
+    const res = await fetch(`http://localhost:7070/schedule/load?semester=${semester}`, {
+        method: "POST",
+    });
+    return res.json();
+}

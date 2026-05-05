@@ -47,6 +47,8 @@ export default function WeeklySchedule({
   onDeleteSchedule,
 }) {
   const [selected, setSelected] = useState(null);
+  const [imageOpen, setImageOpen] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null);
 
   const handleRemove = () => {
     onRemoveCourse(selected);
@@ -99,7 +101,11 @@ export default function WeeklySchedule({
                       <img
                         src={prof.imageUrl || "/default-prof.png"}
                         alt={prof.name}
-                        className="w-16 h-16 rounded-full object-cover flex-shrink-0"
+                        className="w-16 h-16 rounded-full object-cover cursor-pointer hover:scale-105 transition flex-shrink-0"
+                        onClick={() => {
+                          setSelectedImage(prof.imageUrl || "/default-prof.png");
+                          setImageOpen(true);
+                        }}
                       />
                       <div>
                         <div className="font-medium">{prof.name}</div>
@@ -148,6 +154,17 @@ export default function WeeklySchedule({
               Close
             </Button>
           </div>
+        </DialogContent>
+      </Dialog>
+      {/* IMAGE ZOOM MODAL */}
+      <Dialog open={imageOpen} onOpenChange={setImageOpen}>
+        <DialogContent className="flex justify-center items-center max-w-3xl">
+          <DialogTitle className="sr-only">Professor Image</DialogTitle>
+          <img
+            src={selectedImage}
+            alt="Professor"
+            className="w-80 h-80 rounded-full object-cover"
+          />
         </DialogContent>
       </Dialog>
     </div>

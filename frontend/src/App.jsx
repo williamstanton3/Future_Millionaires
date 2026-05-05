@@ -10,7 +10,8 @@ import {
   getAllSchedules,
   getActiveSchedule,
   clearSchedule,
-  deleteSavedSchedule
+  deleteSavedSchedule,
+  loadSavedSchedule
 } from "./api/ScheduleApi";
 import CourseList from "./components/Courses/CourseList";
 import ConflictModal from "./components/ConflictModal/ConflictModal";
@@ -66,6 +67,7 @@ export default function App() {
         : [],
     }));
 
+  // Tell the backend which semester is active, then restore whatever live schedule is there.
   const handleSemesterChange = async (semester) => {
     setActiveSemester(semester);
     setCourses([]);
@@ -112,6 +114,7 @@ export default function App() {
     return false;
   };
 
+  // Adds to frontend state and immediately syncs to the backend live schedule.
   const handleAddCourse = async (course) => {
     const normalizedTimes = Array.isArray(course.times)
       ? course.times.map((t) => ({
@@ -148,6 +151,7 @@ export default function App() {
     ]);
   };
 
+  // Accepts a suggested alternative schedule after a time conflict.
   const handleAcceptSuggestion = async (suggestedSchedule) => {
     try {
       await clearSchedule();
@@ -162,6 +166,7 @@ export default function App() {
     }
   };
 
+  // Removes from frontend state and immediately syncs to the backend live schedule.
   const handleRemoveCourse = async (course) => {
     await removeCourseFromBackend(course);
     setSchedule((prev) =>
@@ -213,21 +218,35 @@ export default function App() {
   };
 
   const handleConfirmLoad = async () => {
-    const { semester, courses } = pendingLoad;
-    setPendingLoad(null);
-    setActiveSemester(semester);
-    setCourses([]);
+      const { semester, courses } = pendingLoad;
+      setPendingLoad(null);
 
-    const normalized = normalizeCourseList(courses.schedule ?? []);
-    setSchedule(normalized);
+      try {
+          const result = await loadSavedSchedule(semester);
+          if (result.success) {
+              setActiveSemester(semester);
+              setCourses([]);
+              setSchedule(normalizeCourseList(result.courses ?? []));
+              return;
+          }
+      } catch (err) {
+          // fall through to JSON mode handling
+      }
 
-    try {
-      await setSemester(semester);
-      await clearSchedule();
-      await Promise.all(normalized.map((course) => addCourseToBackend(course)));
-    } catch (err) {
-      console.error("Failed to sync loaded schedule to backend:", err);
-    }
+      // JSON mode fallback — load entirely on frontend
+      try {
+          await setSemester(semester);
+          await clearSchedule();
+
+          const normalized = normalizeCourseList(courses.schedule ?? []);
+          setActiveSemester(semester);
+          setCourses([]);
+          setSchedule(normalized);
+
+          await Promise.all(normalized.map((course) => addCourseToBackend(course)));
+      } catch (err) {
+          console.error("Failed to load schedule in JSON mode:", err);
+      }
   };
 
   const handleDeleteSaved = async (semester) => {

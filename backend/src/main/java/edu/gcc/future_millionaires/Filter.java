@@ -16,7 +16,6 @@ public class Filter {
     private int credits; // 3
     private String keyword; // keyword search across course fields
 
-
     // Constructor
     public Filter() {
         department = null;
@@ -26,6 +25,7 @@ public class Filter {
         credits = -1; // represents null
         keyword = null;
     }
+
 
     // Setters
     public void setDepartment(String subject) { department = subject; }
